@@ -3,131 +3,126 @@
 <head>
 <meta charset="UTF-8">
 <style>
-  @page { size: A4 landscape; margin: 1cm; }
-  body { font-family: Arial, sans-serif; font-size: 8px; color: #1e293b; }
-  h1 { font-size: 13px; text-align: center; color: white; background: #1E3A5F;
-       padding: 8px; margin-bottom: 4px; }
-  h2 { font-size: 9px; color: #1E3A5F; margin: 14px 0 4px 0;
-       border-bottom: 2px solid #1E3A5F; padding-bottom: 3px; }
-  .subtitle { text-align:center; font-size:8px; color:#64748b; margin-bottom:10px; }
-  table { width: 100%; border-collapse: collapse; margin-bottom: 6px; font-size: 7.5px; }
-  th { font-weight: bold; font-size: 7px; text-align: center;
-       padding: 4px 2px; border: 1px solid #ccc; background: #FFF2CC; }
-  td { border: 1px solid #ddd; padding: 3px 2px; vertical-align: middle; }
-  .hdr-lact  td { background: #4CAF50; color: white; font-weight: bold; font-size: 9px; padding: 5px 8px; }
-  .hdr-inf1  td { background: #64748B; color: white; font-weight: bold; font-size: 9px; padding: 5px 8px; }
-  .hdr-inf2a td { background: #EA580C; color: white; font-weight: bold; font-size: 9px; padding: 5px 8px; }
-  .hdr-inf2b td { background: #2563EB; color: white; font-weight: bold; font-size: 9px; padding: 5px 8px; }
-  .hdr-sin   td { background: #94A3B8; color: white; font-weight: bold; font-size: 9px; padding: 5px 8px; }
-  .row-lact  { background: #E2EFDA; }
-  .row-inf1  { background: #FFFFFF; }
-  .row-inf2a { background: #FCE4D6; }
-  .row-inf2b { background: #DBEAFE; }
-  .badge-m { background:#DBEAFE; color:#1e3a8a; padding:1px 5px; font-weight:bold; }
-  .badge-f { background:#FCE4D6; color:#9a3412; padding:1px 5px; font-weight:bold; }
-  .stats-wrap { margin-top: 14px; }
-  .stat-box { display: inline-block; width: 30%; vertical-align: top; margin-right: 2%; }
-  .stat-title { background:#1E3A5F; color:white; font-weight:bold; font-size:8px; padding:4px 6px; text-align:center; }
-  .stat-table { width:100%; border-collapse:collapse; }
-  .stat-table td { border:1px solid #ddd; padding:3px 6px; font-size:8px; }
-  .stat-table .total-row td { background:#FFF2CC; font-weight:bold; }
-  .stat-itdb td { background:#E2EFDA; }
-  .stat-ext  td { background:#DBEAFE; }
-  .leyenda { margin-bottom: 8px; font-size: 7.5px; }
-  .leg-item { display: inline-block; margin-right: 12px; padding: 2px 8px; border: 1px solid #ddd; }
-  .leg-lact  { background:#E2EFDA; }
-  .leg-inf1  { background:#FFFFFF; border:1px solid #ccc; }
-  .leg-inf2a { background:#FCE4D6; }
-  .leg-inf2b { background:#DBEAFE; }
+  body { font-family: Arial, sans-serif; font-size: 8px; margin: 10px; }
+  h1 { font-size: 11px; text-align: center; background: #1E3A5F; color: white; padding: 6px; margin-bottom: 4px; }
+  h2 { font-size: 9px; background: #E2E8F0; padding: 3px 6px; margin: 6px 0 3px 0; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+  th { background: #1E3A5F; color: white; padding: 3px 4px; font-size: 7px; text-align: center; border: 1px solid #ccc; }
+  td { padding: 2px 4px; border: 1px solid #ccc; vertical-align: middle; font-size: 7px; }
+  .sala-LACTANTES  td { background: #E2EFDA; }
+  .sala-INFANTE-I  td { background: #F8F8F8; }
+  .sala-INFANTE-IIA td { background: #FCE4D6; }
+  .sala-INFANTE-IIB td { background: #DBEAFE; }
+  .stats-table { width: 40%; margin: 0 auto; }
+  .stats-table th { background: #334155; }
+  .footer { text-align: center; font-size: 7px; color: #64748B; margin-top: 8px; }
 </style>
 </head>
 <body>
 
-<h1>CENTRO INFANTIL DON BOSQUITO - LISTA DE NINOS INSCRITOS - GESTION {{ gestion }}</h1>
-<p class="subtitle">Exportado el {% now "d/m/Y H:i" %} | Total ninos: {{ ninos|length }}</p>
+<h1>CENTRO INFANTIL DON BOSQUITO — LISTA DE NIÑOS INSCRITOS — GESTIÓN {{ gestion }}</h1>
 
-<div class="leyenda">
-  <strong>Leyenda de salas:</strong>
-  <span class="leg-item leg-lact">Lactantes</span>
-  <span class="leg-item leg-inf1">Infante I</span>
-  <span class="leg-item leg-inf2a">Infante II A</span>
-  <span class="leg-item leg-inf2b">Infante II B</span>
+<table>
+  <thead>
+    <tr>
+      <th>Nº</th>
+      <th>AP. PATERNO</th>
+      <th>AP. MATERNO</th>
+      <th>NOMBRES</th>
+      <th>S</th>
+      <th>F. NAC.</th>
+      <th>AÑO</th>
+      <th>MES</th>
+      <th>CI NIÑO</th>
+      <th>PESO</th>
+      <th>TALLA</th>
+      <th>VAC.</th>
+      <th>SALA</th>
+      <th>NOMBRE TUTOR</th>
+      <th>OCUPACIÓN</th>
+      <th>CARRERA</th>
+      <th>AÑO/SEM</th>
+      <th>TURNO</th>
+      <th>CELULAR</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for nino in ninos %}
+    {% with sala_key=get_sala_key nino_sala=nino.id_grupo|stringformat:"s" %}
+    <tr class="sala-{{ nino.id_grupo.nombre_grupo|upper|cut:' '|cut:'.' }}">
+      <td style="text-align:center;">{{ forloop.counter }}</td>
+      <td>{{ nino.apellido_paterno|upper }}</td>
+      <td>{{ nino.apellido_materno|upper }}</td>
+      <td>{{ nino.nombres|upper }}</td>
+      <td style="text-align:center;">{{ nino.sexo }}</td>
+      <td style="text-align:center;">{{ nino.fecha_nacimiento|date:"d/m/Y" }}</td>
+      <td style="text-align:center;">{{ nino.get_edad }}</td>
+      <td style="text-align:center;">{{ nino.get_meses_restantes }}</td>
+      <td style="text-align:center;">{{ nino.ci_nino|default:"" }}</td>
+      <td style="text-align:center;">{% if nino.peso_kg %}{{ nino.peso_kg }}kg{% endif %}</td>
+      <td style="text-align:center;">{% if nino.talla_cm %}{{ nino.talla_cm }}cm{% endif %}</td>
+      <td style="text-align:center;">{% if nino.vacunas_al_dia %}✓{% else %}✗{% endif %}</td>
+      <td style="text-align:center;">{{ nino.id_grupo|default:"S/S" }}</td>
+      <td>{{ nino.get_responsable_name|upper }}</td>
+      <td>
+        {% if nino.responsable %}
+          {% with t=nino.responsable %}
+            {% if t.ocupacion_especifica %}{{ t.ocupacion_especifica|upper }}
+            {% else %}{{ t.get_ocupacion_display|upper }}{% endif %}
+          {% endwith %}
+        {% endif %}
+      </td>
+      <td>
+        {% if nino.responsable %}
+          {% with t=nino.responsable %}
+            {% if t.carrera %}{{ t.carrera|upper }}{% endif %}
+          {% endwith %}
+        {% endif %}
+      </td>
+      <td>
+        {% if nino.responsable %}
+          {% with t=nino.responsable %}
+            {{ t.anio_semestre|default:"" }}
+          {% endwith %}
+        {% endif %}
+      </td>
+      <td>
+        {% if nino.responsable %}
+          {% with t=nino.responsable %}
+            {{ t.turno|default:"" }}
+          {% endwith %}
+        {% endif %}
+      </td>
+      <td>
+        {% if nino.responsable %}
+          {% with t=nino.responsable %}
+            {{ t.contacto|default:"" }}
+          {% endwith %}
+        {% endif %}
+      </td>
+    </tr>
+    {% endwith %}
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Estadísticas -->
+<h2>ESTADÍSTICAS GENERALES — GESTIÓN {{ gestion }}</h2>
+<table class="stats-table">
+  <thead>
+    <tr><th>CATEGORÍA</th><th>CANTIDAD</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Padres Estudiantes ITDB</td><td style="text-align:center;">{{ stats.itdb }}</td></tr>
+    <tr><td>Familias Externas</td><td style="text-align:center;">{{ stats.externos }}</td></tr>
+    <tr><td>Total Niños</td><td style="text-align:center;">{{ stats.total }}</td></tr>
+    <tr><td>Niños (Varones)</td><td style="text-align:center;">{{ stats.masc }}</td></tr>
+    <tr><td>Niñas (Mujeres)</td><td style="text-align:center;">{{ stats.fem }}</td></tr>
+  </tbody>
+</table>
+
+<div class="footer">
+  Centro Infantil Salesiano Don Bosco — Sistema de Gestión — {{ gestion }}
 </div>
-
-{% regroup ninos by id_grupo as ninos_por_sala %}
-{% for grupo in ninos_por_sala %}
-{% with sala_upper=grupo.grouper|stringformat:"s"|upper %}
-
-{% if "LACTANTE" in sala_upper %}
-<table>
-  <tr class="hdr-lact"><td colspan="12">SALA: LACTANTES - {{ grupo.list|length }} ninos</td></tr>
-  <tr><th style="width:3%">N</th><th style="width:10%">AP. PATERNO</th><th style="width:10%">AP. MATERNO</th><th style="width:10%">NOMBRE</th><th style="width:4%">SEXO</th><th style="width:8%">FECHA NAC.</th><th style="width:4%">ANOS</th><th style="width:4%">MESES</th><th style="width:13%">RESPONSABLE</th><th style="width:12%">OCUPACION</th><th style="width:10%">CARRERA</th><th style="width:8%">CELULAR</th></tr>
-  {% for nino in grupo.list %}<tr class="row-lact"><td style="text-align:center;">{{ forloop.counter }}</td><td>{{ nino.apellido_paterno|upper|default:"-" }}</td><td>{{ nino.apellido_materno|upper|default:"-" }}</td><td>{{ nino.nombres|upper|default:"-" }}</td><td style="text-align:center;">{% if nino.sexo == 'M' %}<span class="badge-m">M</span>{% else %}<span class="badge-f">F</span>{% endif %}</td><td style="text-align:center;">{{ nino.fecha_nacimiento|date:"d/m/Y"|default:"-" }}</td><td style="text-align:center;">{{ nino.get_edad }}</td><td style="text-align:center;">{{ nino.get_meses_restantes }}</td><td>{{ nino.get_responsable_name|upper|default:"-" }}</td><td style="font-size:7px;">{% with t=nino.responsable %}{% if t %}{{ t.get_ocupacion_display }}{% if t.ocupacion_especifica %} ({{ t.ocupacion_especifica }}){% endif %}{% endif %}{% endwith %}</td><td style="font-size:7px;">{% with t=nino.responsable %}{{ t.carrera|default:"" }}{% endwith %}</td><td>{% with t=nino.responsable %}{{ t.contacto|default:"" }}{% endwith %}</td></tr>{% endfor %}
-</table>
-{% endif %}
-
-{% if "INFANTE II A" in sala_upper or "INFANTE IIA" in sala_upper %}
-<table>
-  <tr class="hdr-inf2a"><td colspan="12">SALA: INFANTE II A - {{ grupo.list|length }} ninos</td></tr>
-  <tr><th style="width:3%">N</th><th style="width:10%">AP. PATERNO</th><th style="width:10%">AP. MATERNO</th><th style="width:10%">NOMBRE</th><th style="width:4%">SEXO</th><th style="width:8%">FECHA NAC.</th><th style="width:4%">ANOS</th><th style="width:4%">MESES</th><th style="width:13%">RESPONSABLE</th><th style="width:12%">OCUPACION</th><th style="width:10%">CARRERA</th><th style="width:8%">CELULAR</th></tr>
-  {% for nino in grupo.list %}<tr class="row-inf2a"><td style="text-align:center;">{{ forloop.counter }}</td><td>{{ nino.apellido_paterno|upper|default:"-" }}</td><td>{{ nino.apellido_materno|upper|default:"-" }}</td><td>{{ nino.nombres|upper|default:"-" }}</td><td style="text-align:center;">{% if nino.sexo == 'M' %}<span class="badge-m">M</span>{% else %}<span class="badge-f">F</span>{% endif %}</td><td style="text-align:center;">{{ nino.fecha_nacimiento|date:"d/m/Y"|default:"-" }}</td><td style="text-align:center;">{{ nino.get_edad }}</td><td style="text-align:center;">{{ nino.get_meses_restantes }}</td><td>{{ nino.get_responsable_name|upper|default:"-" }}</td><td style="font-size:7px;">{% with t=nino.responsable %}{% if t %}{{ t.get_ocupacion_display }}{% if t.ocupacion_especifica %} ({{ t.ocupacion_especifica }}){% endif %}{% endif %}{% endwith %}</td><td style="font-size:7px;">{% with t=nino.responsable %}{{ t.carrera|default:"" }}{% endwith %}</td><td>{% with t=nino.responsable %}{{ t.contacto|default:"" }}{% endwith %}</td></tr>{% endfor %}
-</table>
-{% endif %}
-
-{% if "INFANTE II B" in sala_upper or "INFANTE IIB" in sala_upper %}
-<table>
-  <tr class="hdr-inf2b"><td colspan="12">SALA: INFANTE II B - {{ grupo.list|length }} ninos</td></tr>
-  <tr><th style="width:3%">N</th><th style="width:10%">AP. PATERNO</th><th style="width:10%">AP. MATERNO</th><th style="width:10%">NOMBRE</th><th style="width:4%">SEXO</th><th style="width:8%">FECHA NAC.</th><th style="width:4%">ANOS</th><th style="width:4%">MESES</th><th style="width:13%">RESPONSABLE</th><th style="width:12%">OCUPACION</th><th style="width:10%">CARRERA</th><th style="width:8%">CELULAR</th></tr>
-  {% for nino in grupo.list %}<tr class="row-inf2b"><td style="text-align:center;">{{ forloop.counter }}</td><td>{{ nino.apellido_paterno|upper|default:"-" }}</td><td>{{ nino.apellido_materno|upper|default:"-" }}</td><td>{{ nino.nombres|upper|default:"-" }}</td><td style="text-align:center;">{% if nino.sexo == 'M' %}<span class="badge-m">M</span>{% else %}<span class="badge-f">F</span>{% endif %}</td><td style="text-align:center;">{{ nino.fecha_nacimiento|date:"d/m/Y"|default:"-" }}</td><td style="text-align:center;">{{ nino.get_edad }}</td><td style="text-align:center;">{{ nino.get_meses_restantes }}</td><td>{{ nino.get_responsable_name|upper|default:"-" }}</td><td style="font-size:7px;">{% with t=nino.responsable %}{% if t %}{{ t.get_ocupacion_display }}{% if t.ocupacion_especifica %} ({{ t.ocupacion_especifica }}){% endif %}{% endif %}{% endwith %}</td><td style="font-size:7px;">{% with t=nino.responsable %}{{ t.carrera|default:"" }}{% endwith %}</td><td>{% with t=nino.responsable %}{{ t.contacto|default:"" }}{% endwith %}</td></tr>{% endfor %}
-</table>
-{% endif %}
-
-{% if "INFANTE I" in sala_upper and "INFANTE II" not in sala_upper %}
-<table>
-  <tr class="hdr-inf1"><td colspan="12">SALA: INFANTE I - {{ grupo.list|length }} ninos</td></tr>
-  <tr><th style="width:3%">N</th><th style="width:10%">AP. PATERNO</th><th style="width:10%">AP. MATERNO</th><th style="width:10%">NOMBRE</th><th style="width:4%">SEXO</th><th style="width:8%">FECHA NAC.</th><th style="width:4%">ANOS</th><th style="width:4%">MESES</th><th style="width:13%">RESPONSABLE</th><th style="width:12%">OCUPACION</th><th style="width:10%">CARRERA</th><th style="width:8%">CELULAR</th></tr>
-  {% for nino in grupo.list %}<tr class="row-inf1"><td style="text-align:center;">{{ forloop.counter }}</td><td>{{ nino.apellido_paterno|upper|default:"-" }}</td><td>{{ nino.apellido_materno|upper|default:"-" }}</td><td>{{ nino.nombres|upper|default:"-" }}</td><td style="text-align:center;">{% if nino.sexo == 'M' %}<span class="badge-m">M</span>{% else %}<span class="badge-f">F</span>{% endif %}</td><td style="text-align:center;">{{ nino.fecha_nacimiento|date:"d/m/Y"|default:"-" }}</td><td style="text-align:center;">{{ nino.get_edad }}</td><td style="text-align:center;">{{ nino.get_meses_restantes }}</td><td>{{ nino.get_responsable_name|upper|default:"-" }}</td><td style="font-size:7px;">{% with t=nino.responsable %}{% if t %}{{ t.get_ocupacion_display }}{% if t.ocupacion_especifica %} ({{ t.ocupacion_especifica }}){% endif %}{% endif %}{% endwith %}</td><td style="font-size:7px;">{% with t=nino.responsable %}{{ t.carrera|default:"" }}{% endwith %}</td><td>{% with t=nino.responsable %}{{ t.contacto|default:"" }}{% endwith %}</td></tr>{% endfor %}
-</table>
-{% endif %}
-
-{% if "LACTANTE" not in sala_upper and "INFANTE" not in sala_upper %}
-<table>
-  <tr class="hdr-sin"><td colspan="12">SIN SALA ASIGNADA - {{ grupo.list|length }} ninos</td></tr>
-  <tr><th style="width:3%">N</th><th style="width:10%">AP. PATERNO</th><th style="width:10%">AP. MATERNO</th><th style="width:10%">NOMBRE</th><th style="width:4%">SEXO</th><th style="width:8%">FECHA NAC.</th><th style="width:4%">ANOS</th><th style="width:4%">MESES</th><th style="width:13%">RESPONSABLE</th><th style="width:12%">OCUPACION</th><th style="width:10%">CARRERA</th><th style="width:8%">CELULAR</th></tr>
-  {% for nino in grupo.list %}<tr><td style="text-align:center;">{{ forloop.counter }}</td><td>{{ nino.apellido_paterno|upper|default:"-" }}</td><td>{{ nino.apellido_materno|upper|default:"-" }}</td><td>{{ nino.nombres|upper|default:"-" }}</td><td style="text-align:center;">{% if nino.sexo == 'M' %}<span class="badge-m">M</span>{% else %}<span class="badge-f">F</span>{% endif %}</td><td style="text-align:center;">{{ nino.fecha_nacimiento|date:"d/m/Y"|default:"-" }}</td><td style="text-align:center;">{{ nino.get_edad }}</td><td style="text-align:center;">{{ nino.get_meses_restantes }}</td><td>{{ nino.get_responsable_name|upper|default:"-" }}</td><td style="font-size:7px;">{% with t=nino.responsable %}{% if t %}{{ t.get_ocupacion_display }}{% if t.ocupacion_especifica %} ({{ t.ocupacion_especifica }}){% endif %}{% endif %}{% endwith %}</td><td style="font-size:7px;">{% with t=nino.responsable %}{{ t.carrera|default:"" }}{% endwith %}</td><td>{% with t=nino.responsable %}{{ t.contacto|default:"" }}{% endwith %}</td></tr>{% endfor %}
-</table>
-{% endif %}
-
-{% endwith %}
-{% endfor %}
-
-<h2>ESTADISTICAS GENERALES - GESTION {{ gestion }}</h2>
-<div class="stats-wrap">
-  <div class="stat-box">
-    <div class="stat-title">GENERO DE NINOS</div>
-    <table class="stat-table">
-      <tr><td>Masculino</td><td style="text-align:center;background:#DBEAFE;">{{ stats.masc }}</td></tr>
-      <tr><td>Femenino</td><td style="text-align:center;background:#FCE4D6;">{{ stats.fem }}</td></tr>
-      <tr class="total-row"><td>TOTAL</td><td style="text-align:center;">{{ stats.total }}</td></tr>
-    </table>
-  </div>
-  <div class="stat-box">
-    <div class="stat-title">TIPO DE FAMILIA</div>
-    <table class="stat-table">
-      <tr class="stat-itdb"><td>Padres Estudiantes ITDB</td><td style="text-align:center;">{{ stats.itdb }}</td></tr>
-      <tr class="stat-ext"><td>Familias Externas</td><td style="text-align:center;">{{ stats.externos }}</td></tr>
-      <tr class="total-row"><td>TOTAL</td><td style="text-align:center;">{{ stats.total }}</td></tr>
-    </table>
-  </div>
-  <div class="stat-box">
-    <div class="stat-title">NINOS POR SALA</div>
-    <table class="stat-table">
-      {% regroup ninos by id_grupo as por_sala %}
-      {% for g in por_sala %}<tr><td>{{ g.grouper|default:"Sin sala" }}</td><td style="text-align:center;">{{ g.list|length }}</td></tr>{% endfor %}
-      <tr class="total-row"><td>TOTAL</td><td style="text-align:center;">{{ stats.total }}</td></tr>
-    </table>
-  </div>
-</div>
-
 </body>
 </html>

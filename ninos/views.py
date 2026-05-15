@@ -243,8 +243,9 @@ def exportar_excel_ninos(request):
 
     # Headers
     headers = ['Nro','AP. PATERNO','AP. MATERNO','NOMBRES','SEXO','F. NACIMIENTO',
-               'AÑO','MESES','SALA','NOMBRE TUTOR','OCUPACIÓN','CARRERA',
-               'AÑO/SEM','TURNO','CELULAR','PESO(kg)','TALLA(cm)','E. NUTRICIONAL','VACUNAS']
+               'AÑO','MESES','CI NIÑO/A','DIRECCIÓN','PESO(kg)','TALLA(cm)','VACUNAS',
+               'SALA','NOMBRE TUTOR','CI TUTOR','OCUPACIÓN','CARRERA',
+               'AÑO/SEM','TURNO','CELULAR','E. NUTRICIONAL']
     ws.append(headers)
     ws.row_dimensions[2].height = 40
     for cell in ws[2]:
@@ -266,17 +267,20 @@ def exportar_excel_ninos(request):
             nino.fecha_nacimiento.strftime('%d/%m/%Y') if nino.fecha_nacimiento else '',
             nino.get_edad(),
             nino.get_meses_restantes(),
+            nino.ci_nino or '',
+            (nino.direccion or '').upper(),
+            float(nino.peso_kg) if nino.peso_kg else '',
+            float(nino.talla_cm) if nino.talla_cm else '',
+            'Sí' if nino.vacunas_al_dia else 'No',
             str(nino.id_grupo).upper() if nino.id_grupo else 'SIN SALA',
             nino.get_responsable_name().upper(),
+            getattr(tutor, 'CI_beneficiario', None) or getattr(tutor, 'CI_tutor', '') if tutor else '',
             get_ocupacion_full(tutor),
             limpiar(tutor, 'carrera'),
             limpiar(tutor, 'anio_semestre'),
             limpiar(tutor, 'turno'),
             get_celular(tutor),
-            float(nino.peso_kg) if nino.peso_kg else '',
-            float(nino.talla_cm) if nino.talla_cm else '',
             nino.get_estado_nutricional_display() if nino.estado_nutricional else '',
-            'Sí' if nino.vacunas_al_dia else 'No',
         ]
         ws.append(row)
         r = ws.max_row
@@ -290,7 +294,7 @@ def exportar_excel_ninos(request):
         idx += 1
 
     # Anchos
-    col_widths = [4,16,16,22,5,14,5,6,14,44,42,25,15,10,14,10,10,20,8]
+    col_widths = [4,16,16,22,5,14,5,6,14,30,10,10,8,14,44,14,42,25,15,10,14,20]
     for i, w in enumerate(col_widths, 1):
         ws.column_dimensions[get_column_letter(i)].width = w
 

@@ -5,8 +5,8 @@ class NinoForm(forms.ModelForm):
     class Meta:
         model = Nino
         fields = [
-            'nombres', 'apellido_paterno', 'apellido_materno', 'sexo',
-            'fecha_nacimiento', 'fecha_ingreso', 'sala', 'id_grupo', 'foto',
+            'nombres', 'apellido_paterno', 'apellido_materno', 'ci_nino', 'sexo',
+            'fecha_nacimiento', 'fecha_ingreso', 'direccion', 'sala', 'id_grupo', 'foto',
             # Antropométricos
             'peso_kg', 'talla_cm', 'estado_nutricional', 'vacunas_al_dia',
             # EAD
@@ -23,6 +23,8 @@ class NinoForm(forms.ModelForm):
         ]
         widgets = {
             'nombres': forms.TextInput(attrs={'class': 'form-control'}),
+            'ci_nino': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: 17957806'}),
+            'direccion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Zona / Calle / Nº'}),
             'apellido_paterno': forms.TextInput(attrs={'class': 'form-control'}),
             'apellido_materno': forms.TextInput(attrs={'class': 'form-control'}),
             'sexo': forms.Select(attrs={'class': 'form-select'}),

@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% block title %}Perfil Beneficiario — Centro Infantil{% endblock %}
+{% block page_title %}
+    <div class="d-flex align-items-center gap-3">
+        <a href="{% url 'beneficiarios:lista_beneficiarios' %}" class="btn btn-outline-secondary btn-sm" style="border-radius: 10px;">
+            <i class="bi bi-arrow-left me-1"></i> Volver a la Lista
+        </a>
+        <span>Perfil del Beneficiario</span>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card premium-card animate-up" style="overflow: hidden;">
+
+      <!-- FOTO DE PERFIL -->
+      <div class="card-body text-center py-4 bg-light bg-opacity-50">
+        {% if beneficiario.foto %}
+          <img src="{{ beneficiario.foto.url }}" alt="Foto de perfil"
+               class="mx-auto mb-3 d-block shadow-sm"
+               style="width:100px;height:100px;object-fit:cover;border-radius:24px;border:2px solid #bfdbfe;">
+        {% else %}
+          <div class="mx-auto mb-3 shadow-sm d-flex align-items-center justify-content-center fw-bold"
+               style="width:100px;height:100px;font-size:2.5rem;background:#EFF6FF;color:#2563EB;border-radius:24px;border:2px dashed #bfdbfe;">
+            {{ beneficiario.nombres|slice:":1" }}{{ beneficiario.apellido_paterno|slice:":1" }}
+          </div>
+        {% endif %}
+        <h4 class="fw-bold mb-1 text-dark">{{ beneficiario.nombres }} {{ beneficiario.apellido_paterno }} {{ beneficiario.apellido_materno }}</h4>
+        <p class="text-muted mb-3">
+          <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">CI: {{ beneficiario.CI_beneficiario }}</span>
+        </p>
+        <div class="d-grid gap-2 px-3">
+          <a href="{% url 'beneficiarios:editar_beneficiario' beneficiario.CI_beneficiario %}" class="btn btn-primary fw-bold shadow-sm rounded-pill">
+            <i class="bi bi-pencil-square me-1"></i> Editar Perfil
+          </a>
+          <a href="{% url 'beneficiarios:eliminar_beneficiario' beneficiario.CI_beneficiario %}" class="btn btn-outline-danger rounded-pill">
+            <i class="bi bi-trash me-1"></i> Eliminar
+          </a>
+        </div>
+      </div>
+
+      <!-- INFORMACIÓN -->
+      <div class="card-body p-4" style="font-size:.9rem;">
+        <h6 class="text-uppercase text-secondary fw-bold small mb-3 border-bottom pb-2">Información de Contacto</h6>
+        <div class="mb-3 d-flex align-items-center gap-3">
+          <div class="bg-success bg-opacity-10 text-success p-2 rounded-circle"><i class="bi bi-telephone-fill"></i></div>
+          <div>
+            <div class="small text-muted">Teléfono</div>
+            <div class="fw-bold">{% if beneficiario.contacto %}<a href="tel:{{ beneficiario.contacto }}" class="text-decoration-none text-dark">{{ beneficiario.contacto }}</a>{% else %}—{% endif %}</div>
+          </div>
+        </div>
+        <div class="mb-3 d-flex align-items-center gap-3">
+          <div class="bg-info bg-opacity-10 text-info p-2 rounded-circle"><i class="bi bi-geo-alt-fill"></i></div>
+          <div>
+            <div class="small text-muted">Dirección</div>
+            <div class="fw-bold">{{ beneficiario.direccion|default:"—" }}</div>
+          </div>
+        </div>
+
+        <h6 class="text-uppercase text-secondary fw-bold small mt-4 mb-3 border-bottom pb-2">Ocupación y Formación</h6>
+        <div class="mb-2"><strong>Ocupación:</strong> {{ beneficiario.get_ocupacion_display }}{% if beneficiario.ocupacion_especifica %} — {{ beneficiario.ocupacion_especifica }}{% endif %}</div>
+        {% if beneficiario.carrera %}<div class="mb-2"><strong>Carrera:</strong> {{ beneficiario.carrera }}</div>{% endif %}
+        {% if beneficiario.anio_semestre %}<div class="mb-2"><strong>Año/Semestre:</strong> {{ beneficiario.anio_semestre }}</div>{% endif %}
+
+        <div class="mt-3 pt-2 border-top">
+          <div class="small text-muted">Registrado por</div>
+          <div class="fw-bold">{{ beneficiario.registrado_por|default:"Registro público" }}</div>
+          <div class="small text-muted mt-1">{{ beneficiario.fecha_registro|date:"d/m/Y" }}</div>
+        </div>
+      </div>
+
+      <!-- DOCUMENTO ADJUNTO -->
+      <div class="card-body border-top p-4">
+        <h6 class="text-uppercase text-secondary fw-bold small mb-3 border-bottom pb-2">
+          <i class="bi bi-paperclip me-1"></i> Documento Adjunto
+        </h6>
+        {% if beneficiario.documento_adjunto %}
+          {% with nombre=beneficiario.documento_adjunto.name %}
+            {% if nombre|slice:"-4:" == ".pdf" or nombre|slice:"-4:" == ".PDF" %}
+              <a href="{{ beneficiario.documento_adjunto.url }}" target="_blank" class="btn btn-sm btn-outline-danger w-100 rounded-pill">
+                <i class="bi bi-file-pdf me-1"></i> Ver PDF
+              </a>
+            {% else %}
+              <a href="{{ beneficiario.documento_adjunto.url }}" target="_blank">
+                <img src="{{ beneficiario.documento_adjunto.url }}" alt="Documento"
+                     style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;border:1px solid #e2e8f0;cursor:pointer;">
+              </a>
+              <a href="{{ beneficiario.documento_adjunto.url }}" target="_blank" class="btn btn-sm btn-outline-secondary mt-2 rounded-pill w-100">
+                <i class="bi bi-zoom-in me-1"></i> Ver completo
+              </a>
+            {% endif %}
+          {% endwith %}
+          {% if beneficiario.documentos_adjuntos %}
+            <div class="mt-2 p-2 bg-light rounded-2 small text-muted">{{ beneficiario.documentos_adjuntos }}</div>
+          {% endif %}
+        {% else %}
+          <div class="text-center py-3">
+            <i class="bi bi-file-earmark-x text-muted" style="font-size:2rem;"></i>
+            <p class="text-muted small mt-1 mb-0">Sin documento adjunto</p>
+            <a href="{% url 'beneficiarios:editar_beneficiario' beneficiario.CI_beneficiario %}" class="btn btn-sm btn-outline-primary mt-2 rounded-pill">
+              <i class="bi bi-upload me-1"></i> Subir documento
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Columna Derecha: Niños -->
+  <div class="col-md-8">
+    <div class="card premium-card premium-table animate-up" style="animation-delay: 0.1s;">
+      <div class="card-header bg-white py-4 d-flex align-items-center justify-content-between border-0">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-people-fill me-2 text-primary"></i>Niños a Cargo</h5>
+        <div class="d-flex gap-2 align-items-center">
+          <span class="badge bg-primary rounded-pill px-3">{{ beneficiario.ninos.count }} Niños</span>
+          <a href="/ninos/nuevo/" class="btn btn-sm btn-outline-primary rounded-pill"><i class="bi bi-plus-lg me-1"></i>Agregar niño</a>
+        </div>
+      </div>
+      <div class="table-responsive px-2 pb-2">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr class="text-muted small text-uppercase">
+              <th class="ps-3 py-3 border-0">Estudiante</th>
+              <th class="py-3 border-0">Edad</th>
+              <th class="py-3 border-0">Género</th>
+              <th class="py-3 border-0">Grupo / Sala</th>
+              <th class="text-end pe-3 py-3 border-0">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for n in beneficiario.ninos.all %}
+            <tr>
+              <td class="ps-3">
+                <div class="d-flex align-items-center gap-3">
+                  {% if n.foto %}
+                    <img src="{{ n.foto.url }}" style="width:38px;height:38px;border-radius:10px;object-fit:cover;">
+                  {% else %}
+                    <div class="bg-light rounded-3 d-flex align-items-center justify-content-center fw-bold text-primary" style="width:38px;height:38px;">{{ n.nombres|first }}</div>
+                  {% endif %}
+                  <div class="fw-bold">{{ n.nombres }} {{ n.apellido_paterno }}</div>
+                </div>
+              </td>
+              <td><span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">{{ n.get_edad_display }}</span></td>
+              <td>
+                {% if n.sexo == 'M' %}
+                  <span class="badge rounded-pill bg-info bg-opacity-10 text-info px-2 py-1" style="font-size:0.65rem;">NIÑO</span>
+                {% else %}
+                  <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger px-2 py-1" style="font-size:0.65rem;">NIÑA</span>
+                {% endif %}
+              </td>
+              <td>{{ n.id_grupo|default:"Sin asignar" }}</td>
+              <td class="text-end pe-3">
+                <a href="{% url 'ninos:detalle_nino' n.pk %}" class="btn btn-sm btn-outline-primary rounded-pill">
+                  <i class="bi bi-eye"></i> Ver Perfil
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center py-5">
+                <i class="bi bi-person-x fs-1 opacity-25 d-block mb-2"></i>
+                <p class="text-muted">No hay niños vinculados.</p>
+                <a href="/ninos/nuevo/" class="btn btn-sm btn-primary rounded-pill mt-2">Agregar Niño</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

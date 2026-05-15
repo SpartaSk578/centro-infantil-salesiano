@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ grupo.nombre_grupo }} — Centro Infantil{% endblock %}
+{% block page_title %}<i class="bi bi-people me-2"></i>{{ grupo.nombre_grupo }}{% endblock %}
+
+{% block extra_css %}
+<style>
+{% with nombre=grupo.nombre_grupo|upper %}
+{% if 'LACTANTE' in nombre %}
+  :root { --sala-color: #4CAF50; --sala-bg: #E2EFDA; --sala-text: #166534; }
+{% elif 'INFANTE II A' in nombre or 'INFANTE IIA' in nombre %}
+  :root { --sala-color: #EA580C; --sala-bg: #FCE4D6; --sala-text: #9A3412; }
+{% elif 'INFANTE II B' in nombre or 'INFANTE IIB' in nombre %}
+  :root { --sala-color: #2563EB; --sala-bg: #DBEAFE; --sala-text: #1E3A8A; }
+{% elif 'INFANTE I' in nombre %}
+  :root { --sala-color: #64748B; --sala-bg: #F1F5F9; --sala-text: #334155; }
+{% else %}
+  :root { --sala-color: #2563EB; --sala-bg: #EFF6FF; --sala-text: #1E40AF; }
+{% endif %}
+{% endwith %}
+.sala-banner { background: var(--sala-bg); border-left: 5px solid var(--sala-color); border-radius: 14px; }
+.sala-icon { background: var(--sala-color); color: #fff; border-radius: 50%; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+.sala-title { color: var(--sala-text); font-weight: 900; font-size: 1.4rem; }
+.sala-badge { background: var(--sala-color); color: #fff; border-radius: 20px; padding: .3em .9em; font-weight: 800; font-size: .85rem; }
+.header-bar { height: 6px; background: var(--sala-color); border-radius: 12px 12px 0 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'grupos:lista_grupos' %}">Grupos</a></li>
+            <li class="breadcrumb-item active">{{ grupo.nombre_grupo }}</li>
+        </ol>
+    </nav>
+    {% if user.id_rol and user.id_rol.nombre_rol != 'Educadora' %}
+    <a href="{% url 'grupos:editar_grupo' grupo.pk %}" class="btn btn-outline-primary btn-sm" style="border-radius:10px;">
+        <i class="bi bi-pencil me-1"></i>Editar Grupo
+    </a>
+    {% endif %}
+</div>
+
+<!-- Banner de sala -->
+<div class="sala-banner p-4 mb-4 d-flex align-items-center gap-4">
+    <div class="sala-icon">
+        <i class="bi bi-door-open"></i>
+    </div>
+    <div class="flex-grow-1">
+        <div class="sala-title">{{ grupo.nombre_grupo }}</div>
+        <div class="text-muted small mt-1">
+            <i class="bi bi-person-badge me-1"></i>
+            Educador/a: <strong>
+                {% if grupo.educador_responsable %}
+                    {{ grupo.educador_responsable.get_full_name }}
+                {% else %}
+                    Sin asignar
+                {% endif %}
+            </strong>
+        </div>
+    </div>
+    <span class="sala-badge">{{ grupo.ninos.count }} niños</span>
+</div>
+
+<!-- Tabla de niños -->
+<div class="card shadow-sm" style="border-radius:16px; overflow:hidden; border:none;">
+    <div class="header-bar"></div>
+    <div class="card-header bg-white border-0 py-3 px-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="fw-bold mb-0">
+                <i class="bi bi-emoji-smile me-2" style="color: var(--sala-color);"></i>Niños en este grupo
+            </h6>
+            <span class="sala-badge">{{ grupo.ninos.count }}</span>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead style="background:#F8FAFC;">
+                <tr>
+                    <th class="ps-4" style="font-size:.75rem; font-weight:800; text-transform:uppercase; color:#64748B;">Nombre Completo</th>
+                    <th style="font-size:.75rem; font-weight:800; text-transform:uppercase; color:#64748B;">Edad</th>
+                    <th style="font-size:.75rem; font-weight:800; text-transform:uppercase; color:#64748B;">Género</th>
+                    <th style="font-size:.75rem; font-weight:800; text-transform:uppercase; color:#64748B;">Tutor/a</th>
+                    <th class="text-end pe-4" style="font-size:.75rem; font-weight:800; text-transform:uppercase; color:#64748B;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for n in grupo.ninos.all %}
+                <tr>
+                    <td class="ps-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                                 style="width:36px;height:36px;background:var(--sala-bg);color:var(--sala-text);font-size:.8rem;">
+                                {{ n.nombres|slice:":1" }}{{ n.apellido_paterno|slice:":1" }}
+                            </div>
+                            <div class="fw-bold" style="font-size:.875rem;">
+                                {{ n.apellido_paterno }} {{ n.apellido_materno }}, {{ n.nombres }}
+                            </div>
+                        </div>
+                    </td>
+                    <td style="font-size:.85rem;">{{ n.get_edad_display }}</td>
+                    <td>
+                        {% if n.sexo == 'M' or n.sexo == 'Masculino' %}
+                            <span class="badge rounded-pill px-2 py-1" style="background:#EFF6FF;color:#2563EB;font-size:.65rem;font-weight:800;">NIÑO</span>
+                        {% else %}
+                            <span class="badge rounded-pill px-2 py-1" style="background:#FEF2F2;color:#EF4444;font-size:.65rem;font-weight:800;">NIÑA</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-size:.82rem;">{{ n.get_responsable_name }}</td>
+                    <td class="text-end pe-4">
+                        <a href="{% url 'ninos:detalle_nino' n.pk %}" class="btn btn-sm btn-light" style="border-radius:8px;">
+                            <i class="bi bi-eye"></i> Ver Perfil
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-2 d-block mb-2 opacity-25"></i>
+                        No hay niños registrados en esta sala actualmente.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

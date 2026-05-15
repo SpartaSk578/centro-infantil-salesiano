@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirmar Eliminación — {{ nino.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 text-center" style="border-radius: 20px; overflow: hidden;">
+                <!-- Icono de Advertencia con Animación -->
+                <div class="py-5 bg-danger bg-opacity-10">
+                    <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 5rem;"></i>
+                </div>
+                
+                <div class="card-body p-5">
+                    <h2 class="fw-bold text-dark mb-3">¿Estás seguro?</h2>
+                    <p class="text-muted mb-4">
+                        Estás a punto de eliminar permanentemente el registro de: <br>
+                        <strong class="text-dark fs-5">{{ nino.get_full_name }}</strong>
+                    </p>
+                    
+                    <div class="alert alert-warning border-0 small mb-4 py-3">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        Esta acción no se puede deshacer y eliminará también su historial de asistencias y evaluaciones.
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger py-3 fw-bold rounded-pill shadow-sm">
+                                <i class="bi bi-trash3-fill me-2"></i> Confirmar y Eliminar
+                            </button>
+                            <a href="{% url 'ninos:lista_ninos' %}" class="btn btn-outline-secondary py-3 fw-bold rounded-pill border-0">
+                                No, mantener registro
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body { background-color: #f1f5f9; }
+    .card { animation: fadeInUp 0.5s ease-out; }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}

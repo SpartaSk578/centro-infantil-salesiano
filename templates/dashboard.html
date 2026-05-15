@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tablero — Centro Infantil Salesiano{% endblock %}
+{% block page_title %}Tablero de Información{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        padding: 1.25rem 1rem;
+        border-radius: 15px;
+        border: none;
+        color: white !important;
+        transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        min-height: 160px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    .stat-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.15); }
+    .stat-card::after {
+        content: ""; position: absolute; top: -10%; right: -10%;
+        width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%;
+    }
+    .bg-ninos        { background: linear-gradient(135deg, #2563eb, #1d4ed8) !important; }
+    .bg-beneficiarios{ background: linear-gradient(135deg, #10b981, #059669) !important; }
+    .bg-grupos       { background: linear-gradient(135deg, #d97706, #b45309) !important; }
+    .bg-usuarios     { background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important; }
+    .bg-presentes    { background: linear-gradient(135deg, #0d9488, #0f766e) !important; }
+    .bg-ausentes     { background: linear-gradient(135deg, #ef4444, #dc2626) !important; }
+    .stat-icon  { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .stat-value { font-size: 2.8rem; font-weight: 900; line-height: 1; margin-bottom: 0.25rem; }
+    .stat-label { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; }
+    .action-card { border-radius: 20px; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 5px 15px rgba(0,0,0,0.04); background: white; }
+    .btn-action { border-radius: 12px; padding: 12px; font-weight: 700; transition: all 0.2s; text-align: center; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .welcome-banner { background: linear-gradient(90deg, #eff6ff 0%, #ffffff 100%); border-left: 6px solid #2563eb !important; border-radius: 16px; }
+
+    /* Colores de sala en leyenda */
+    .sala-tag { display:inline-block; padding:3px 10px; border-radius:20px; font-size:0.75rem; font-weight:700; margin-right:6px; }
+    .sala-lactante  { background:#E2EFDA; color:#166534; border:1px solid #86efac; }
+    .sala-infante1  { background:#F1F5F9; color:#334155; border:1px solid #cbd5e1; }
+    .sala-infante2a { background:#FCE4D6; color:#9A3412; border:1px solid #fdba74; }
+    .sala-infante2b { background:#DBEAFE; color:#1E3A8A; border:1px solid #93c5fd; }
+
+    .export-section { background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% with rol=user.id_rol.nombre_rol %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0 text-dark">Tablero
+        <span class="badge rounded-pill bg-primary ms-2" style="font-size:0.65rem;vertical-align:middle;">{{ rol|upper }}</span>
+    </h3>
+    <div class="d-flex align-items-center gap-3">
+        <div class="bg-white px-3 py-2 border-0 rounded-4 shadow-sm d-flex align-items-center gap-2">
+            <i class="bi bi-calendar3 text-primary"></i>
+            <span class="fw-bold small">{% now "d/m/Y" %}</span>
+        </div>
+        <a href="{% url 'beneficiarios:lista_preinscripciones' %}" class="btn btn-warning rounded-4 fw-bold shadow-sm px-4 position-relative">
+            <i class="bi bi-inbox-fill me-2"></i> Pre-inscripciones
+            {% if preinscripciones_pendientes > 0 %}
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow-sm border border-white" style="font-size:0.7rem;">
+                    {{ preinscripciones_pendientes }}
+                </span>
+            {% endif %}
+        </a>
+    </div>
+</div>
+
+<!-- Banner bienvenida -->
+<div class="card mb-4 border-0 shadow-sm welcome-banner">
+    <div class="card-body p-4">
+        <div class="d-flex align-items-center gap-4">
+            {% if user.foto_perfil %}
+                <img src="{{ user.foto_perfil.url }}" style="width:65px;height:65px;border-radius:16px;object-fit:cover;border:2px solid #bfdbfe;">
+            {% else %}
+                <div class="bg-primary text-white rounded-4 d-flex align-items-center justify-content-center shadow-sm" style="width:65px;height:65px;font-size:1.5rem;font-weight:900;">
+                    {{ user.nombre_usuario|slice:":2"|upper }}
+                </div>
+            {% endif %}
+            <div>
+                <h4 class="fw-bold mb-1">Bienvenido/a, {{ user.get_full_name|default:user.nombre_usuario }}</h4>
+                <div class="d-flex align-items-center gap-2 text-muted">
+                    <span class="small"><i class="bi bi-shield-check text-primary me-1"></i>{{ rol }}</span>
+                    <span class="opacity-25">|</span>
+                    <span class="small">Gestión {{ gestion }}</span>
+                </div>
+                <!-- Leyenda colores de sala -->
+                <div class="mt-2">
+                    <span class="sala-tag sala-lactante">🟢 Lactantes</span>
+                    <span class="sala-tag sala-infante1">⚪ Infante I</span>
+                    <span class="sala-tag sala-infante2a">🟠 Infante II A</span>
+                    <span class="sala-tag sala-infante2b">🔵 Infante II B</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas -->
+<div class="row g-4 mb-4">
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="stat-card bg-ninos">
+            <i class="bi bi-emoji-smile-fill stat-icon"></i>
+            <div class="stat-value">{{ total_ninos }}</div>
+            <div class="stat-label">Niños</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="stat-card bg-beneficiarios">
+            <i class="bi bi-people-fill stat-icon"></i>
+            <div class="stat-value">{{ total_beneficiarios }}</div>
+            <div class="stat-label">Padres/Madres</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="stat-card bg-grupos">
+            <i class="bi bi-collection-fill stat-icon"></i>
+            <div class="stat-value">{{ total_grupos }}</div>
+            <div class="stat-label">Grupos</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="stat-card bg-usuarios">
+            <i class="bi bi-person-gear stat-icon"></i>
+            <div class="stat-value">{{ total_usuarios }}</div>
+            <div class="stat-label">Usuarios</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="stat-card bg-presentes">
+            <i class="bi bi-check-circle-fill stat-icon"></i>
+            <div class="stat-value">{{ presentes_hoy|default:"0" }}</div>
+            <div class="stat-label">Presentes</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <div class="stat-card bg-ausentes">
+            <i class="bi bi-x-circle-fill stat-icon"></i>
+            <div class="stat-value">{{ ausentes_hoy|default:"0" }}</div>
+            <div class="stat-label">Ausentes</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Acciones rápidas -->
+    <div class="col-md-4">
+        <div class="card action-card h-100">
+            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+                <h6 class="fw-bold text-dark"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Acciones Rápidas</h6>
+            </div>
+            <div class="card-body p-4">
+                <div class="d-flex flex-column gap-3">
+                    <a href="{% url 'asistencia:asistencia_masiva' %}" class="btn btn-primary btn-action w-100 shadow-sm">
+                        <i class="bi bi-check2-all fs-5"></i> Pasar Lista
+                    </a>
+                    {% if rol != 'Educadora' %}
+                    <a href="{% url 'ninos:crear_nino' %}" class="btn btn-outline-primary btn-action w-100">
+                        <i class="bi bi-person-plus fs-5"></i> Nuevo Niño
+                    </a>
+                    <a href="{% url 'evaluaciones:crear_evaluacion' %}" class="btn btn-outline-primary btn-action w-100">
+                        <i class="bi bi-plus-circle fs-5"></i> Nueva Evaluación
+                    </a>
+                    <a href="{% url 'beneficiarios:crear_beneficiario' %}" class="btn btn-outline-secondary btn-action w-100">
+                        <i class="bi bi-people fs-5"></i> Nuevo Padres/Madres
+                    </a>
+                    {% else %}
+                    <a href="{% url 'evaluaciones:crear_evaluacion' %}" class="btn btn-outline-primary btn-action w-100">
+                        <i class="bi bi-plus-circle fs-5"></i> Nueva Evaluación
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exportación General -->
+    <div class="col-md-4">
+        <div class="card action-card h-100">
+            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+                <h6 class="fw-bold text-dark"><i class="bi bi-download text-success me-2"></i>Exportación General</h6>
+                <p class="text-muted small mb-0">Lista completa OFPROBOL con estadísticas</p>
+            </div>
+            <div class="card-body p-4">
+                <div class="d-flex flex-column gap-3">
+                    <a href="{% url 'ninos:exportar_excel_ninos' %}" class="btn btn-action w-100"
+                       style="background:#E2EFDA;color:#166534;border:1.5px solid #86efac;font-weight:700;">
+                        <i class="bi bi-file-earmark-excel fs-5"></i> Excel General (OFPROBOL)
+                    </a>
+                    <a href="{% url 'ninos:exportar_pdf_ninos' %}" class="btn btn-action w-100"
+                       style="background:#FCE4D6;color:#9A3412;border:1.5px solid #fdba74;font-weight:700;">
+                        <i class="bi bi-file-earmark-pdf fs-5"></i> PDF General (OFPROBOL)
+                    </a>
+                    <hr class="my-1">
+                    <p class="text-muted small mb-1 fw-bold">Por categoría:</p>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'beneficiarios:exportar_excel_beneficiarios' %}" class="btn btn-sm btn-outline-success flex-fill rounded-pill">
+                            <i class="bi bi-file-excel me-1"></i>Padres/IDS
+                        </a>
+                        <a href="{% url 'beneficiarios:exportar_pdf_beneficiarios' %}" class="btn btn-sm btn-outline-danger flex-fill rounded-pill">
+                            <i class="bi bi-file-pdf me-1"></i>Padres/IDS
+                        </a>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'beneficiarios:exportar_excel_tutores' %}" class="btn btn-sm btn-outline-success flex-fill rounded-pill">
+                            <i class="bi bi-file-excel me-1"></i>Padres/Externos
+                        </a>
+                        <a href="{% url 'beneficiarios:exportar_pdf_tutores' %}" class="btn btn-sm btn-outline-danger flex-fill rounded-pill">
+                            <i class="bi bi-file-pdf me-1"></i>Padres/Externos
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evaluaciones recientes -->
+    <div class="col-md-4">
+        <div class="card action-card h-100">
+            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2">
+                <h6 class="fw-bold text-dark"><i class="bi bi-clipboard2-data-fill text-primary me-2"></i>Últimas Evaluaciones</h6>
+            </div>
+            <div class="card-body p-4 pt-0">
+                {% if ultimas_evaluaciones %}
+                    <div class="list-group list-group-flush">
+                        {% for ev in ultimas_evaluaciones %}
+                        <div class="list-group-item px-0 py-3 bg-transparent">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-bold text-dark">{{ ev.id_nino.get_full_name }}</div>
+                                    <div class="small text-muted">{{ ev.periodo }}</div>
+                                </div>
+                                <span class="badge bg-light text-primary border">Ver</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="h-100 d-flex flex-column align-items-center justify-content-center text-muted py-5">
+                        <i class="bi bi-clipboard-x fs-1 opacity-25 d-block mb-2"></i>
+                        <p class="small fw-bold">No hay evaluaciones aún</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endwith %}
+{% endblock %}

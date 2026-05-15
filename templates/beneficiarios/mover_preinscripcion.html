@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mover Pre-Inscripción — Centro Infantil{% endblock %}
+{% block page_title %}
+    <div class="d-flex align-items-center gap-3">
+        <a href="{% url 'beneficiarios:lista_preinscripciones' %}?estado=aceptada" class="btn btn-outline-secondary btn-sm" style="border-radius: 10px;">
+            <i class="bi bi-arrow-left me-1"></i> Volver
+        </a>
+        <span>Mover Pre-Inscripción</span>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow-sm" style="border-radius: 14px; border: 1px solid #E2E8F0;">
+            <div class="card-body p-4">
+                <!-- Información del Niño -->
+                <div class="alert alert-info rounded-3 mb-4" style="border-radius: 10px;">
+                    <h6 class="mb-2"><i class="bi bi-info-circle me-2"></i> Información del Niño</h6>
+                    <div class="row g-2 small">
+                        <div class="col-6">
+                            <strong>Nombre:</strong> {{ p.nombres_nino }} {{ p.apellido_paterno_nino }} {{ p.apellido_materno_nino }}
+                        </div>
+                        <div class="col-6">
+                            <strong>Fecha de Nacimiento:</strong> {{ p.fecha_nacimiento_nino }}
+                        </div>
+                        <div class="col-6">
+                            <strong>Sexo:</strong> {{ p.get_sexo_nino_display }}
+                        </div>
+                        <div class="col-6">
+                            <strong>Sala Solicitada:</strong> {{ p.sala_solicitada }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información del Tutor -->
+                <div class="alert alert-warning rounded-3 mb-4" style="border-radius: 10px;">
+                    <h6 class="mb-2"><i class="bi bi-person-heart me-2"></i> Información del Tutor</h6>
+                    <div class="row g-2 small">
+                        <div class="col-6">
+                            <strong>Nombre:</strong> {{ p.nombres_tutor }} {{ p.apellido_paterno_tutor }} {{ p.apellido_materno_tutor }}
+                        </div>
+                        <div class="col-6">
+                            <strong>CI:</strong> {{ p.CI_tutor }}
+                        </div>
+                        <div class="col-6">
+                            <strong>Ocupación:</strong> {{ p.get_ocupacion_display }}
+                        </div>
+                        <div class="col-6">
+                            <strong>Teléfono:</strong> {{ p.telefono }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Opciones de Movimiento -->
+                <h5 class="mb-4 fw-bold">¿A dónde deseas mover esta pre-inscripción?</h5>
+                
+                <form method="POST" class="d-flex gap-3 flex-wrap">
+                    {% csrf_token %}
+                    
+                    <!-- Opción 1: Mover a Padre/IDS -->
+                    <div class="flex-grow-1">
+                        <div class="card shadow-sm" style="border-radius: 12px; border: 2px solid #D1FAE5; cursor: pointer; transition: all 0.2s;"
+                             onclick="document.getElementById('destino_beneficiario').checked = true; this.parentElement.style.borderColor = '#6EE7B7'; this.style.background = '#F0FDF4';">
+                            <div class="card-body p-3 text-center">
+                                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">👧</div>
+                                <h6 class="mb-2 fw-bold">Crear como Padre IDS</h6>
+                                <p class="text-muted small mb-0">El niño será registrado como nuevo Padre IDS en el sistema.</p>
+                                <button type="submit" name="destino" value="beneficiario" class="btn btn-success btn-sm mt-3 fw-bold" style="border-radius: 8px;">
+                                    <i class="bi bi-arrow-right me-1"></i> Mover a Padre IDS
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Opción 2: Mover a Padre/Externo -->
+                    <div class="flex-grow-1">
+                        <div class="card shadow-sm" style="border-radius: 12px; border: 2px solid #DBEAFE; cursor: pointer; transition: all 0.2s;"
+                             onclick="document.getElementById('destino_tutor').checked = true; this.parentElement.style.borderColor = '#93C5FD'; this.style.background = '#F0F9FF';">
+                            <div class="card-body p-3 text-center">
+                                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">👨</div>
+                                <h6 class="mb-2 fw-bold">Crear como Padre Externo</h6>
+                                <p class="text-muted small mb-0">El padre será registrado como nuevo Padre Externo en el sistema.</p>
+                                <button type="submit" name="destino" value="tutor" class="btn btn-primary btn-sm mt-3 fw-bold" style="border-radius: 8px;">
+                                    <i class="bi bi-arrow-right me-1"></i> Mover a Padre Externo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campos ocultos -->
+                    <input type="radio" id="destino_beneficiario" name="destino" value="beneficiario" style="display: none;">
+                    <input type="radio" id="destino_tutor" name="destino" value="tutor" style="display: none;">
+                </form>
+
+                <!-- Botón Cancelar -->
+                <div class="mt-4 d-flex gap-2 justify-content-end">
+                    <a href="{% url 'beneficiarios:lista_preinscripciones' %}?estado=aceptada" class="btn btn-outline-secondary fw-bold" style="border-radius: 8px;">
+                        <i class="bi bi-x me-1"></i> Cancelar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

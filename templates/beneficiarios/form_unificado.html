@@ -1,0 +1,333 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ titulo }} — Centro Infantil{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0" style="border-radius: 20px; overflow: hidden;">
+                <!-- Header -->
+                <div class="p-4 text-white d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-person-plus-fill fs-2"></i>
+                        <div>
+                            <h3 class="fw-bold mb-0">{{ titulo }}</h3>
+                            <p class="mb-0 opacity-75 small">Complete la información de la madre y el padre (opcional)</p>
+                        </div>
+                    </div>
+                    <a href="{% url 'beneficiarios:lista_beneficiarios' %}" class="btn btn-sm btn-light rounded-pill px-3 fw-bold">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                </div>
+
+                <div class="card-body p-4 p-md-5 bg-white">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="row g-5">
+
+                            <!-- ===== COLUMNA MADRE ===== -->
+                            <div class="col-xl-6 border-end">
+                                <div class="pe-xl-4">
+                                    <h4 class="text-primary fw-bold mb-4 d-flex align-items-center gap-3">
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:40px;height:40px;">
+                                            <i class="bi bi-person-hearts"></i>
+                                        </div>
+                                        Madre (Beneficiaria Principal)
+                                    </h4>
+
+                                    <!-- Foto madre -->
+                                    <div class="mb-4 p-3 bg-light rounded-3">
+                                        <div class="small fw-bold text-muted text-uppercase mb-2"><i class="bi bi-camera me-1"></i> Foto de perfil</div>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div id="preview-madre-container" class="overflow-hidden flex-shrink-0 d-flex align-items-center justify-content-center bg-white"
+                                                 style="width:72px;height:72px;border-radius:50%;border:2px dashed #93c5fd;">
+                                                {% if objeto and objeto.foto %}
+                                                    <img id="preview-madre" src="{{ objeto.foto.url }}" style="width:100%;height:100%;object-fit:cover;">
+                                                    <div id="placeholder-madre" style="display:none;"></div>
+                                                {% else %}
+                                                    <div id="placeholder-madre" class="text-center text-muted"><i class="bi bi-person" style="font-size:1.8rem;"></i></div>
+                                                    <img id="preview-madre" src="" style="width:100%;height:100%;object-fit:cover;display:none;">
+                                                {% endif %}
+                                            </div>
+                                            <div class="d-flex flex-column gap-1">
+                                                <label for="id_foto" class="btn btn-outline-primary btn-sm rounded-pill px-3 mb-0" style="cursor:pointer;">
+                                                    <i class="bi bi-upload me-1"></i> Subir foto
+                                                </label>
+                                                <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3" onclick="abrirCamara('madre')">
+                                                    <i class="bi bi-camera-fill me-1"></i> Tomar foto
+                                                </button>
+                                            </div>
+                                            <div style="display:none;">{{ form.foto }}</div>
+                                        </div>
+                                        <div id="camara-madre" class="mt-2" style="display:none;">
+                                            <video id="video-madre" autoplay playsinline style="width:100%;max-width:280px;border-radius:10px;"></video>
+                                            <canvas id="canvas-madre" style="display:none;"></canvas>
+                                            <div class="d-flex gap-2 mt-1">
+                                                <button type="button" class="btn btn-success btn-sm rounded-pill px-3" onclick="capturar('madre')"><i class="bi bi-camera me-1"></i> Capturar</button>
+                                                <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" onclick="cerrarCamara('madre')">Cancelar</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Datos madre -->
+                                    <div class="row g-3">
+                                        <div class="col-md-6">{{ form.CI_beneficiario|as_crispy_field }}</div>
+                                        <div class="col-md-6">{{ form.nombres|as_crispy_field }}</div>
+                                        <div class="col-md-6">{{ form.apellido_paterno|as_crispy_field }}</div>
+                                        <div class="col-md-6">{{ form.apellido_materno|as_crispy_field }}</div>
+                                        <div class="col-12"><hr class="my-2 opacity-10"></div>
+                                        <div class="col-md-6">{{ form.ocupacion|as_crispy_field }}</div>
+                                        <div class="col-md-6">{{ form.ocupacion_especifica|as_crispy_field }}</div>
+                                        <div class="col-md-6">{{ form.carrera|as_crispy_field }}</div>
+                                        <div class="col-md-3">{{ form.anio_semestre|as_crispy_field }}</div>
+                                        <div class="col-md-3">{{ form.turno|as_crispy_field }}</div>
+                                        <div class="col-12"><hr class="my-2 opacity-10"></div>
+                                        <div class="col-md-6">{{ form.contacto|as_crispy_field }}</div>
+                                        <div class="col-md-6">{{ form.direccion|as_crispy_field }}</div>
+
+                                        <!-- Documento madre -->
+                                        <div class="col-12">
+                                            <label class="form-label"><i class="bi bi-file-earmark me-1"></i> Documento adjunto <small class="text-muted fw-normal">(Carnet, Matrícula)</small></label>
+                                            <div class="d-flex gap-2 flex-wrap mb-2">
+                                                <label for="id_documento_adjunto" class="btn btn-outline-secondary btn-sm rounded-pill px-3 mb-0" style="cursor:pointer;">
+                                                    <i class="bi bi-upload me-1"></i> Subir archivo
+                                                </label>
+                                                <button type="button" class="btn btn-outline-dark btn-sm rounded-pill px-3" onclick="abrirCamaraDoc('madre')">
+                                                    <i class="bi bi-camera me-1"></i> Fotografiar
+                                                </button>
+                                            </div>
+                                            {{ form.documento_adjunto }}
+                                            <div id="doc-preview-madre" class="mt-2" style="display:none;">
+                                                <img id="doc-img-madre" src="" style="max-width:180px;border-radius:8px;border:1px solid #cbd5e1;">
+                                                <div id="doc-nombre-madre" class="small text-muted mt-1"></div>
+                                            </div>
+                                            <div id="camara-doc-madre" class="mt-2 p-2 bg-light rounded-3" style="display:none;">
+                                                <video id="video-doc-madre" autoplay playsinline style="width:100%;max-width:280px;border-radius:10px;"></video>
+                                                <canvas id="canvas-doc-madre" style="display:none;"></canvas>
+                                                <div class="d-flex gap-2 mt-1">
+                                                    <button type="button" class="btn btn-success btn-sm rounded-pill px-3" onclick="capturarDoc('madre')"><i class="bi bi-camera me-1"></i> Capturar</button>
+                                                    <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" onclick="cerrarCamaraDoc('madre')">Cancelar</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12">{{ form.documentos_adjuntos|as_crispy_field }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ===== COLUMNA PADRE ===== -->
+                            <div class="col-xl-6">
+                                <div class="ps-xl-4">
+                                    <h4 class="text-warning fw-bold mb-4 d-flex align-items-center gap-3">
+                                        <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center" style="width:40px;height:40px;">
+                                            <i class="bi bi-person-fill-add"></i>
+                                        </div>
+                                        Padre (Tutor Secundario)
+                                    </h4>
+
+                                    <div class="alert alert-warning border-0 small py-2 mb-4 d-flex align-items-center">
+                                        <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                                        <span>Este apartado es <strong>opcional</strong>. Si el niño solo tiene un representante, deje estos campos vacíos.</span>
+                                    </div>
+
+                                    <!-- Foto padre -->
+                                    <div class="mb-4 p-3 bg-light rounded-3">
+                                        <div class="small fw-bold text-muted text-uppercase mb-2"><i class="bi bi-camera me-1"></i> Foto de perfil</div>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div id="preview-padre-container" class="overflow-hidden flex-shrink-0 d-flex align-items-center justify-content-center bg-white"
+                                                 style="width:72px;height:72px;border-radius:50%;border:2px dashed #fcd34d;">
+                                                <div id="placeholder-padre" class="text-center text-muted"><i class="bi bi-person" style="font-size:1.8rem;"></i></div>
+                                                <img id="preview-padre" src="" style="width:100%;height:100%;object-fit:cover;display:none;">
+                                            </div>
+                                            <div class="d-flex flex-column gap-1">
+                                                <label for="id_tutor_foto" class="btn btn-outline-warning btn-sm rounded-pill px-3 mb-0" style="cursor:pointer;">
+                                                    <i class="bi bi-upload me-1"></i> Subir foto
+                                                </label>
+                                                <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3" onclick="abrirCamara('padre')">
+                                                    <i class="bi bi-camera-fill me-1"></i> Tomar foto
+                                                </button>
+                                            </div>
+                                            <div style="display:none;">{{ tutor_form.foto }}</div>
+                                        </div>
+                                        <div id="camara-padre" class="mt-2" style="display:none;">
+                                            <video id="video-padre" autoplay playsinline style="width:100%;max-width:280px;border-radius:10px;"></video>
+                                            <canvas id="canvas-padre" style="display:none;"></canvas>
+                                            <div class="d-flex gap-2 mt-1">
+                                                <button type="button" class="btn btn-success btn-sm rounded-pill px-3" onclick="capturar('padre')"><i class="bi bi-camera me-1"></i> Capturar</button>
+                                                <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" onclick="cerrarCamara('padre')">Cancelar</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Datos padre -->
+                                    <div class="row g-3">
+                                        <div class="col-md-6">{{ tutor_form.CI_tutor|as_crispy_field }}</div>
+                                        <div class="col-md-6">{{ tutor_form.nombres|as_crispy_field }}</div>
+                                        <div class="col-md-6">{{ tutor_form.apellido_paterno|as_crispy_field }}</div>
+                                        <div class="col-md-6">{{ tutor_form.apellido_materno|as_crispy_field }}</div>
+                                        <div class="col-12"><hr class="my-2 opacity-10"></div>
+                                        <div class="col-md-6">{{ tutor_form.ocupacion|as_crispy_field }}</div>
+                                        <div class="col-md-6">{{ tutor_form.ocupacion_especifica|as_crispy_field }}</div>
+                                        <div class="col-md-6">{{ tutor_form.carrera|as_crispy_field }}</div>
+                                        <div class="col-md-3">{{ tutor_form.anio_semestre|as_crispy_field }}</div>
+                                        <div class="col-md-3">{{ tutor_form.turno|as_crispy_field }}</div>
+                                        <div class="col-12"><hr class="my-2 opacity-10"></div>
+                                        <div class="col-md-6">{{ tutor_form.contacto|as_crispy_field }}</div>
+                                        <div class="col-md-6">{{ tutor_form.direccion|as_crispy_field }}</div>
+
+                                        <!-- Documento padre -->
+                                        <div class="col-12">
+                                            <label class="form-label"><i class="bi bi-file-earmark me-1"></i> Documento adjunto <small class="text-muted fw-normal">(Carnet, Matrícula)</small></label>
+                                            <div class="d-flex gap-2 flex-wrap mb-2">
+                                                <label for="id_tutor_documento" class="btn btn-outline-secondary btn-sm rounded-pill px-3 mb-0" style="cursor:pointer;">
+                                                    <i class="bi bi-upload me-1"></i> Subir archivo
+                                                </label>
+                                                <button type="button" class="btn btn-outline-dark btn-sm rounded-pill px-3" onclick="abrirCamaraDoc('padre')">
+                                                    <i class="bi bi-camera me-1"></i> Fotografiar
+                                                </button>
+                                            </div>
+                                            {{ tutor_form.documento_adjunto }}
+                                            <div id="doc-preview-padre" class="mt-2" style="display:none;">
+                                                <img id="doc-img-padre" src="" style="max-width:180px;border-radius:8px;border:1px solid #cbd5e1;">
+                                                <div id="doc-nombre-padre" class="small text-muted mt-1"></div>
+                                            </div>
+                                            <div id="camara-doc-padre" class="mt-2 p-2 bg-light rounded-3" style="display:none;">
+                                                <video id="video-doc-padre" autoplay playsinline style="width:100%;max-width:280px;border-radius:10px;"></video>
+                                                <canvas id="canvas-doc-padre" style="display:none;"></canvas>
+                                                <div class="d-flex gap-2 mt-1">
+                                                    <button type="button" class="btn btn-success btn-sm rounded-pill px-3" onclick="capturarDoc('padre')"><i class="bi bi-camera me-1"></i> Capturar</button>
+                                                    <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" onclick="cerrarCamaraDoc('padre')">Cancelar</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12">{{ tutor_form.documentos_adjuntos|as_crispy_field }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BOTONES -->
+                        <div class="d-flex justify-content-end gap-3 mt-5 pt-4 border-top">
+                            <a href="{% url 'beneficiarios:lista_beneficiarios' %}" class="btn btn-outline-secondary px-5 fw-bold rounded-pill">Cancelar</a>
+                            <button type="submit" class="btn btn-primary px-5 fw-bold rounded-pill shadow-sm">
+                                <i class="bi bi-check-circle-fill me-2"></i> Guardar Familia
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card { background-color: #f8fafc; }
+    .form-label { font-weight: 700; color: #475569; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-control, .form-select { border-radius: 10px; padding: 0.6rem 1rem; border: 1px solid #e2e8f0; background-color: white; transition: all 0.2s; }
+    .form-control:focus { border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37,99,235,0.1); }
+    legend { display: none; }
+    #id_documento_adjunto, #id_tutor_documento { display: none; }
+</style>
+
+<script>
+const streams = {};
+
+// Preview foto al seleccionar archivo
+document.getElementById('id_foto').addEventListener('change', function(e) {
+    if (e.target.files[0]) mostrarPreview('madre', URL.createObjectURL(e.target.files[0]));
+});
+document.getElementById('id_tutor_foto') && document.getElementById('id_tutor_foto').addEventListener('change', function(e) {
+    if (e.target.files[0]) mostrarPreview('padre', URL.createObjectURL(e.target.files[0]));
+});
+document.getElementById('id_documento_adjunto').addEventListener('change', function(e) {
+    if (e.target.files[0]) mostrarDoc('madre', e.target.files[0]);
+});
+document.getElementById('id_tutor_documento') && document.getElementById('id_tutor_documento').addEventListener('change', function(e) {
+    if (e.target.files[0]) mostrarDoc('padre', e.target.files[0]);
+});
+
+function mostrarPreview(quien, url) {
+    document.getElementById('preview-' + quien).src = url;
+    document.getElementById('preview-' + quien).style.display = 'block';
+    document.getElementById('placeholder-' + quien).style.display = 'none';
+}
+
+function mostrarDoc(quien, file) {
+    document.getElementById('doc-nombre-' + quien).textContent = file.name;
+    if (file.type.startsWith('image/')) {
+        document.getElementById('doc-img-' + quien).src = URL.createObjectURL(file);
+        document.getElementById('doc-img-' + quien).style.display = 'block';
+    } else {
+        document.getElementById('doc-img-' + quien).style.display = 'none';
+    }
+    document.getElementById('doc-preview-' + quien).style.display = 'block';
+}
+
+// --- CÁMARA FOTO ---
+async function abrirCamara(quien) {
+    try {
+        streams['foto_' + quien] = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+        document.getElementById('video-' + quien).srcObject = streams['foto_' + quien];
+        document.getElementById('camara-' + quien).style.display = 'block';
+    } catch(e) { alert('No se pudo acceder a la cámara.'); }
+}
+
+function capturar(quien) {
+    const video = document.getElementById('video-' + quien);
+    const canvas = document.getElementById('canvas-' + quien);
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    canvas.toBlob(function(blob) {
+        const file = new File([blob], 'foto_' + quien + '.jpg', { type: 'image/jpeg' });
+        const dt = new DataTransfer(); dt.items.add(file);
+        const inputId = quien === 'madre' ? 'id_foto' : 'id_tutor_foto';
+        document.getElementById(inputId).files = dt.files;
+        mostrarPreview(quien, URL.createObjectURL(blob));
+        cerrarCamara(quien);
+    }, 'image/jpeg', 0.92);
+}
+
+function cerrarCamara(quien) {
+    if (streams['foto_' + quien]) { streams['foto_' + quien].getTracks().forEach(t => t.stop()); delete streams['foto_' + quien]; }
+    document.getElementById('camara-' + quien).style.display = 'none';
+}
+
+// --- CÁMARA DOCUMENTO ---
+async function abrirCamaraDoc(quien) {
+    try {
+        streams['doc_' + quien] = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        document.getElementById('video-doc-' + quien).srcObject = streams['doc_' + quien];
+        document.getElementById('camara-doc-' + quien).style.display = 'block';
+    } catch(e) { alert('No se pudo acceder a la cámara.'); }
+}
+
+function capturarDoc(quien) {
+    const video = document.getElementById('video-doc-' + quien);
+    const canvas = document.getElementById('canvas-doc-' + quien);
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    canvas.toBlob(function(blob) {
+        const file = new File([blob], 'doc_' + quien + '.jpg', { type: 'image/jpeg' });
+        const dt = new DataTransfer(); dt.items.add(file);
+        const inputId = quien === 'madre' ? 'id_documento_adjunto' : 'id_tutor_documento';
+        document.getElementById(inputId).files = dt.files;
+        document.getElementById('doc-img-' + quien).src = URL.createObjectURL(blob);
+        document.getElementById('doc-img-' + quien).style.display = 'block';
+        document.getElementById('doc-nombre-' + quien).textContent = 'Foto capturada';
+        document.getElementById('doc-preview-' + quien).style.display = 'block';
+        cerrarCamaraDoc(quien);
+    }, 'image/jpeg', 0.92);
+}
+
+function cerrarCamaraDoc(quien) {
+    if (streams['doc_' + quien]) { streams['doc_' + quien].getTracks().forEach(t => t.stop()); delete streams['doc_' + quien]; }
+    document.getElementById('camara-doc-' + quien).style.display = 'none';
+}
+</script>
+{% endblock %}

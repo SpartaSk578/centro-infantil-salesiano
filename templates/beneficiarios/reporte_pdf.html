@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  @page { size: A4 landscape; margin: 1cm; }
+  body { font-family: Arial, sans-serif; font-size: 8px; color: #1e293b; }
+  h1 { font-size: 13px; text-align: center; color: white; background: #1E3A5F;
+       padding: 8px; margin-bottom: 4px; border-radius: 4px; }
+  h2 { font-size: 9px; color: #1E3A5F; margin: 14px 0 4px 0;
+       border-bottom: 2px solid #1E3A5F; padding-bottom: 3px; }
+  .subtitle { text-align:center; font-size:8px; color:#64748b; margin-bottom:10px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+  th { background: #1E3A5F; color: white; font-weight: bold; font-size: 7px;
+       text-align: center; padding: 4px 2px; border: 1px solid #ccc; }
+  td { border: 1px solid #ddd; padding: 3px 4px; vertical-align: middle; font-size: 7.5px; }
+  .row-itdb { background: #E2EFDA; }
+  .row-ext  { background: #FFFFFF; }
+  .stat-title { background:#1E3A5F; color:white; font-weight:bold; font-size:8px;
+                padding:4px 6px; text-align:center; }
+  .stat-table { width:40%; border-collapse:collapse; margin-top:8px; }
+  .stat-table td { border:1px solid #ddd; padding:3px 8px; }
+  .total-row td { background:#FFF2CC; font-weight:bold; }
+  .itdb-row td { background:#E2EFDA; }
+  .ext-row  td { background:#DBEAFE; }
+</style>
+</head>
+<body>
+<h1>👥 CENTRO INFANTIL DON BOSQUITO — LISTA DE PADRES/IDS — GESTIÓN {{ gestion }}</h1>
+<p class="subtitle">Exportado el {% now "d/m/Y H:i" %} | Total: {{ beneficiarios|length }} Padres/IDS</p>
+
+<table>
+  <tr>
+    <th>N°</th><th>CI</th><th>APELLIDO PATERNO</th><th>APELLIDO MATERNO</th>
+    <th>NOMBRES</th><th>OCUPACIÓN</th><th>CARRERA</th><th>AÑO/SEM</th>
+    <th>TURNO</th><th>TELÉFONO</th><th>DIRECCIÓN</th><th>NIÑOS</th>
+  </tr>
+  {% for b in beneficiarios %}
+  {% if "ITDB" in b.ocupacion|upper or "ESTUDIANTE" in b.ocupacion|upper %}
+  <tr class="row-itdb">
+  {% else %}
+  <tr class="row-ext">
+  {% endif %}
+    <td style="text-align:center;">{{ forloop.counter }}</td>
+    <td style="text-align:center;">{{ b.CI_beneficiario }}</td>
+    <td>{{ b.apellido_paterno|upper|default:"—" }}</td>
+    <td>{{ b.apellido_materno|upper|default:"—" }}</td>
+    <td>{{ b.nombres|upper|default:"—" }}</td>
+    <td>{{ b.get_ocupacion_display }}{% if b.ocupacion_especifica %} ({{ b.ocupacion_especifica }}){% endif %}</td>
+    <td>{{ b.carrera|default:"—" }}</td>
+    <td>{{ b.anio_semestre|default:"—" }}</td>
+    <td>{{ b.turno|default:"—" }}</td>
+    <td>{{ b.contacto|default:"—" }}</td>
+    <td>{{ b.direccion|default:"—" }}</td>
+    <td style="text-align:center;">{{ b.ninos.count }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h2>ESTADÍSTICAS — GESTIÓN {{ gestion }}</h2>
+<table class="stat-table">
+  <tr><td colspan="2" class="stat-title">TIPO DE BENEFICIARIO</td></tr>
+  <tr class="itdb-row"><td>Padres Estudiantes ITDB</td><td style="text-align:center;">{{ stats.itdb }}</td></tr>
+  <tr class="ext-row"><td>Familias Externas</td><td style="text-align:center;">{{ stats.externos }}</td></tr>
+  <tr class="total-row"><td>TOTAL</td><td style="text-align:center;">{{ stats.total }}</td></tr>
+</table>
+</body>
+</html>

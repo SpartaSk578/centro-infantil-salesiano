@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}Evaluaciones{% endblock %}
+{% block page_title %}Evaluaciones{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <h4 class="fw-bold mb-0"><i class="bi bi-clipboard2-data text-primary me-2"></i>Evaluaciones</h4>
+        <p class="text-muted small mb-0">Escala Abreviada de Desarrollo y datos nutricionales.</p>
+    </div>
+    <a href="{% url 'evaluaciones:crear_evaluacion' %}" class="btn btn-primary fw-bold rounded-3 px-4">
+        <i class="bi bi-plus-lg me-1"></i>Nueva Evaluación
+    </a>
+</div>
+
+<!-- Filtros -->
+<div class="card border-0 shadow-sm mb-4 rounded-3">
+    <div class="card-body p-3">
+        <form method="get" class="row g-2">
+            <div class="col-md-5">
+                <input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Buscar niño...">
+            </div>
+            <div class="col-md-4">
+                <select name="periodo" class="form-select">
+                    <option value="">Todos los períodos</option>
+                    {% for p in periodos %}
+                    {% if p %}<option value="{{ p }}" {% if periodo == p %}selected{% endif %}>{{ p }}</option>{% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-dark w-100 fw-bold"><i class="bi bi-search me-1"></i>Buscar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm" style="border-radius:16px; overflow:hidden;">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead style="background:#0F172A; color:#fff;">
+                <tr>
+                    <th class="ps-4 py-3" style="font-size:.7rem; font-weight:800; text-transform:uppercase;">Niño/a</th>
+                    <th style="font-size:.7rem; font-weight:800; text-transform:uppercase;">Período</th>
+                    <th style="font-size:.7rem; font-weight:800; text-transform:uppercase; text-align:center;">M.Gruesa</th>
+                    <th style="font-size:.7rem; font-weight:800; text-transform:uppercase; text-align:center;">M.Fina</th>
+                    <th style="font-size:.7rem; font-weight:800; text-transform:uppercase; text-align:center;">Aud/Leng</th>
+                    <th style="font-size:.7rem; font-weight:800; text-transform:uppercase; text-align:center;">Pers/Soc</th>
+                    <th style="font-size:.7rem; font-weight:800; text-transform:uppercase; text-align:center;">Total</th>
+                    <th style="font-size:.7rem; font-weight:800; text-transform:uppercase;">Peso/Talla</th>
+                    <th style="font-size:.7rem; font-weight:800; text-transform:uppercase;">Clasificación</th>
+                    <th class="pe-4 text-end" style="font-size:.7rem; font-weight:800; text-transform:uppercase;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white">
+                {% for e in evaluaciones %}
+                <tr>
+                    <td class="ps-4">
+                        <div class="fw-bold" style="font-size:.875rem;">{{ e.id_nino.apellido_paterno }} {{ e.id_nino.apellido_materno }}</div>
+                        <div class="text-primary fw-semibold" style="font-size:.75rem;">{{ e.id_nino.nombres }}</div>
+                        <div class="text-muted" style="font-size:.7rem;">{{ e.fecha|date:"d/m/Y" }}</div>
+                    </td>
+                    <td style="font-size:.82rem;">{{ e.periodo|default:"—" }}</td>
+                    <td class="text-center fw-bold" style="font-size:.85rem;">{{ e.motricidad_gruesa|default:"—" }}</td>
+                    <td class="text-center fw-bold" style="font-size:.85rem;">{{ e.motricidad_fina|default:"—" }}</td>
+                    <td class="text-center fw-bold" style="font-size:.85rem;">{{ e.audicion_lenguaje|default:"—" }}</td>
+                    <td class="text-center fw-bold" style="font-size:.85rem;">{{ e.personal_social|default:"—" }}</td>
+                    <td class="text-center">
+                        {% if e.total_puntaje %}
+                        <span class="badge rounded-pill px-3 py-2 fw-bold" style="background:#DBEAFE; color:#1E40AF; font-size:.8rem;">{{ e.total_puntaje }}</span>
+                        {% else %}—{% endif %}
+                    </td>
+                    <td style="font-size:.78rem;">
+                        {% if e.peso_kg %}{{ e.peso_kg }}kg{% endif %}
+                        {% if e.talla_cm %} / {{ e.talla_cm }}cm{% endif %}
+                        {% if not e.peso_kg and not e.talla_cm %}—{% endif %}
+                    </td>
+                    <td>
+                        {% if e.clasificacion %}
+                        <span class="badge rounded-pill px-2 py-1 fw-bold" style="background:{{ e.get_color_clasificacion }}20; color:{{ e.get_color_clasificacion }}; font-size:.72rem;">
+                            {{ e.get_clasificacion_display }}
+                        </span>
+                        {% else %}—{% endif %}
+                    </td>
+                    <td class="pe-4 text-end">
+                        <div class="btn-group shadow-sm rounded-3 overflow-hidden">
+                            <a href="{% url 'evaluaciones:editar_evaluacion' e.pk %}" class="btn btn-sm btn-white border-end" title="Editar">
+                                <i class="bi bi-pencil-fill text-primary"></i>
+                            </a>
+                            {% if user.id_rol.nombre_rol != 'Educadora' %}
+                            <a href="{% url 'evaluaciones:eliminar_evaluacion' e.pk %}" class="btn btn-sm btn-white" title="Eliminar">
+                                <i class="bi bi-trash3-fill text-danger"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="text-center py-5 text-muted">
+                        <i class="bi bi-clipboard-x fs-1 opacity-25 d-block mb-2"></i>
+                        <p class="fw-bold">No hay evaluaciones registradas.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

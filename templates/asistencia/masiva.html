@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% block title %}Pasar Lista{% endblock %}
+{% block page_title %}Pasar Lista de Asistencia{% endblock %}
+
+{% block content %}
+<style>
+.nino-row { border-radius:12px; background:#fff; box-shadow:0 1px 6px rgba(0,0,0,.06); margin-bottom:.5rem; padding:1rem 1.25rem; }
+.btn-estado { border-radius:8px; font-weight:700; font-size:.82rem; padding:.4rem .9rem; border:2px solid transparent; }
+.btn-asistio  { background:#DCFCE7; color:#166534; border-color:#86efac; }
+.btn-asistio.activo  { background:#16A34A; color:#fff; border-color:#16A34A; }
+.btn-falto    { background:#FEE2E2; color:#991B1B; border-color:#fca5a5; }
+.btn-falto.activo    { background:#DC2626; color:#fff; border-color:#DC2626; }
+.btn-permiso  { background:#FEF9C3; color:#854D0E; border-color:#fde68a; }
+.btn-permiso.activo  { background:#D97706; color:#fff; border-color:#D97706; }
+.permiso-opts { display:none; }
+.permiso-opts.visible { display:flex; gap:.4rem; flex-wrap:wrap; margin-top:.4rem; }
+.simbolo { font-size:1.3rem; font-weight:900; width:36px; height:36px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; }
+</style>
+
+<form method="post" action="{% url 'asistencia:asistencia_masiva' %}">
+{% csrf_token %}
+<input type="hidden" name="guardar" value="1">
+
+<!-- Header -->
+<div class="card border-0 shadow-sm mb-4 rounded-3">
+    <div class="card-body p-3">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-secondary mb-1">FECHA</label>
+                <input type="date" name="fecha" value="{{ fecha }}" class="form-control" required>
+            </div>
+            {% if not grupo_educadora %}
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-secondary mb-1">GRUPO</label>
+                <select name="grupo_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">Todos los grupos</option>
+                    {% for g in grupos %}
+                    <option value="{{ g.pk }}" {% if grupo_id == g.pk|stringformat:"s" %}selected{% endif %}>{{ g.nombre_grupo }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% else %}
+            <div class="col-md-4">
+                <label class="form-label small fw-bold text-secondary mb-1">SALA</label>
+                <input type="text" value="{{ grupo_educadora.nombre_grupo }}" class="form-control" readonly>
+                <input type="hidden" name="grupo_id" value="{{ grupo_educadora.pk }}">
+            </div>
+            {% endif %}
+            <div class="col-md-4 d-flex gap-2 align-items-end">
+                <button type="button" class="btn btn-outline-success btn-sm fw-bold flex-grow-1" onclick="marcarTodos('asistio')">
+                    ● Todos presentes
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-sm fw-bold flex-grow-1" onclick="marcarTodos('falto')">
+                    ✗ Todos ausentes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Leyenda -->
+<div class="d-flex gap-3 mb-3" style="font-size:.8rem;">
+    <span><span class="simbolo bg-success bg-opacity-10 text-success" style="font-size:.9rem;">●</span> Asistió</span>
+    <span><span class="simbolo bg-danger bg-opacity-10 text-danger" style="font-size:.9rem;">✗</span> Faltó</span>
+    <span><span class="simbolo bg-warning bg-opacity-10 text-warning" style="font-size:.9rem;">P</span> Permiso (PR=Resfrío, PD=Diarrea, PV=Viaje, M=Maltrato)</span>
+</div>
+
+<!-- Lista -->
+{% for nino in ninos %}
+{% with a=nino.asistencia_actual %}
+<div class="nino-row d-flex align-items-center gap-3 flex-wrap" id="row-{{ nino.id }}">
+    <div class="flex-grow-1">
+        <div class="fw-bold" style="font-size:.9rem;">{{ nino.apellido_paterno }} {{ nino.apellido_materno }}, {{ nino.nombres }}</div>
+        <div class="text-muted" style="font-size:.75rem;"><i class="bi bi-door-open me-1"></i>{{ nino.id_grupo|default:"Sin sala" }}</div>
+    </div>
+
+    <input type="hidden" name="estado_{{ nino.id }}" id="estado_{{ nino.id }}" value="{{ a.estado|default:'asistio' }}">
+    <input type="hidden" name="permiso_{{ nino.id }}" id="permiso_{{ nino.id }}" value="{{ a.tipo_permiso|default:'' }}">
+
+    <div class="d-flex flex-column gap-1">
+        <div class="d-flex gap-2">
+            <button type="button" class="btn-estado btn-asistio {% if not a or a.estado == 'asistio' %}activo{% endif %}"
+                    onclick="setEstado({{ nino.id }}, 'asistio', this)">● Asistió</button>
+            <button type="button" class="btn-estado btn-falto {% if a and a.estado == 'falto' %}activo{% endif %}"
+                    onclick="setEstado({{ nino.id }}, 'falto', this)">✗ Faltó</button>
+            <button type="button" class="btn-estado btn-permiso {% if a and a.estado == 'permiso' %}activo{% endif %}"
+                    onclick="setEstado({{ nino.id }}, 'permiso', this)">P Permiso</button>
+        </div>
+        <div class="permiso-opts {% if a and a.estado == 'permiso' %}visible{% endif %}" id="perm-{{ nino.id }}">
+            {% for val, lbl in tipos_permiso %}
+            <button type="button" class="btn btn-sm btn-outline-warning fw-bold {% if a and a.tipo_permiso == val %}active{% endif %}"
+                    style="font-size:.72rem;" onclick="setPermiso({{ nino.id }}, '{{ val }}', this)">{{ val }}</button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div>
+        <input type="text" name="obs_{{ nino.id }}" value="{{ a.observaciones|default:'' }}"
+               class="form-control form-control-sm" placeholder="Nota..." style="width:130px;font-size:.78rem;">
+    </div>
+</div>
+{% endwith %}
+{% empty %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-people fs-1 opacity-25 d-block mb-2"></i>
+    <p>No hay niños en este grupo.</p>
+</div>
+{% endfor %}
+
+{% if ninos %}
+<div class="mt-4">
+    <button type="submit" class="btn btn-primary fw-bold px-5 shadow-sm">
+        <i class="bi bi-check2-all me-2"></i>Guardar Asistencia
+    </button>
+</div>
+{% endif %}
+</form>
+
+<script>
+function setEstado(id, estado, btn) {
+    document.getElementById('estado_' + id).value = estado;
+    const row = document.getElementById('row-' + id);
+    row.querySelectorAll('.btn-estado').forEach(b => b.classList.remove('activo'));
+    btn.classList.add('activo');
+    const permOpts = document.getElementById('perm-' + id);
+    if (estado === 'permiso') {
+        permOpts.classList.add('visible');
+    } else {
+        permOpts.classList.remove('visible');
+        document.getElementById('permiso_' + id).value = '';
+        permOpts.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+    }
+}
+function setPermiso(id, val, btn) {
+    document.getElementById('permiso_' + id).value = val;
+    document.getElementById('perm-' + id).querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+function marcarTodos(estado) {
+    document.querySelectorAll('[id^="estado_"]').forEach(inp => {
+        const id = inp.id.replace('estado_', '');
+        const row = document.getElementById('row-' + id);
+        inp.value = estado;
+        row.querySelectorAll('.btn-estado').forEach(b => b.classList.remove('activo'));
+        const btn = row.querySelector('.btn-' + estado);
+        if (btn) btn.classList.add('activo');
+        document.getElementById('perm-' + id).classList.remove('visible');
+        document.getElementById('permiso_' + id).value = '';
+    });
+}
+</script>
+{% endblock %}

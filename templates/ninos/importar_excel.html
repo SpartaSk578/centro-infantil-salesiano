@@ -1,0 +1,375 @@
+{% extends 'base.html' %}
+{% block title %}Importar Excel OFPROBOL{% endblock %}
+
+{% block content %}
+<style>
+  .import-card { background:#fff; border-radius:14px; box-shadow:0 2px 12px rgba(0,0,0,.08); }
+  .drop-zone {
+    border: 2.5px dashed #CBD5E1; border-radius: 12px; padding: 2.5rem 1rem;
+    text-align: center; cursor: pointer; transition: all .25s;
+    background: #F8FAFC;
+  }
+  .drop-zone.drag-over, .drop-zone.file-ready {
+    border-color: #2563EB; background: #EFF6FF;
+  }
+  .drop-zone .icon-upload { font-size: 2.8rem; color: #94A3B8; }
+  .drop-zone.file-ready .icon-upload { color: #2563EB; }
+  .stat-box { border-radius: 10px; padding: 1rem 1.25rem; text-align: center; }
+  .stat-box .num { font-size: 1.9rem; font-weight: 800; line-height: 1; }
+  .stat-box .lbl { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-top: .2rem; }
+  .bg-success-soft { background: #DCFCE7; color: #166534; }
+  .bg-warning-soft { background: #FEF9C3; color: #854D0E; }
+  .bg-danger-soft  { background: #FEE2E2; color: #991B1B; }
+  .bg-info-soft    { background: #DBEAFE; color: #1E40AF; }
+  .badge-itdb   { background: #DBEAFE; color: #1E40AF; font-size: .68rem; padding: .18em .5em; border-radius: 4px; font-weight: 700; }
+  .badge-ext    { background: #F3E8FF; color: #6B21A8; font-size: .68rem; padding: .18em .5em; border-radius: 4px; font-weight: 700; }
+  .results-table { font-size: .82rem; }
+  .results-table th { background: #0F172A; color: #fff; white-space: nowrap; position: sticky; top: 0; z-index: 1; }
+  .results-table td { vertical-align: middle; }
+  .row-creado   { background: #F0FDF4; }
+  .row-existente{ background: #FFFBEB; }
+  .row-error    { background: #FFF1F2; }
+  .warn-list { font-size: .72rem; color: #64748B; padding-left: .2rem; list-style: none; margin: 0; }
+  .warn-list li::before { content: "⚠ "; color: #D97706; }
+  .sala-tag {
+    display: inline-block; border-radius: 5px; padding: .1em .55em;
+    font-size: .7rem; font-weight: 700; white-space: nowrap;
+  }
+  .sala-LACTANTES   { background:#DCFCE7; color:#166534; }
+  .sala-INFANTE-I   { background:#F1F5F9; color:#334155; border:1px solid #CBD5E1; }
+  .sala-INFANTE-IIA { background:#FFEDD5; color:#9A3412; }
+  .sala-INFANTE-IIB { background:#DBEAFE; color:#1E3A8A; }
+  .progress-bar-anim { transition: width .8s ease; }
+  #loadingOverlay {
+    position:fixed; inset:0; background:rgba(15,23,42,.55);
+    z-index:9999; display:flex; align-items:center; justify-content:center;
+    flex-direction:column; gap:1rem; display:none;
+  }
+  #loadingOverlay .spinner-border { width:3rem; height:3rem; color:#fff; }
+  #loadingOverlay p { color:#fff; font-weight:600; font-size:1.05rem; }
+</style>
+
+<!-- Loading overlay -->
+<div id="loadingOverlay">
+  <div class="spinner-border" role="status"></div>
+  <p>Procesando el archivo, por favor espera…</p>
+</div>
+
+<div class="container-fluid px-3 px-md-4 py-4">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{% url 'ninos:lista_ninos' %}" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i>
+    </a>
+    <div>
+      <h4 class="mb-0 fw-bold">
+        <i class="bi bi-file-earmark-arrow-up text-primary me-2"></i>
+        Importar Excel OFPROBOL
+      </h4>
+      <p class="text-muted mb-0" style="font-size:.85rem;">
+        Carga masiva de niños y tutores desde la planilla oficial
+      </p>
+    </div>
+  </div>
+
+  <!-- Mensajes Django -->
+  {% for msg in messages %}
+  <div class="alert alert-{% if msg.tags == 'error' %}danger{% else %}{{ msg.tags }}{% endif %} alert-dismissible fade show" role="alert">
+    <i class="bi bi-{% if msg.tags == 'error' %}x-circle{% else %}check-circle{% endif %} me-2"></i>
+    {{ msg }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endfor %}
+
+  <div class="row g-4">
+
+    <!-- ── Formulario ── -->
+    <div class="col-12 col-lg-4">
+      <div class="import-card p-4">
+        <h6 class="fw-bold mb-3"><i class="bi bi-upload me-2 text-primary"></i>Subir archivo</h6>
+
+        <form method="post" enctype="multipart/form-data" id="importForm">
+          {% csrf_token %}
+
+          <!-- Drop zone -->
+          <div class="drop-zone mb-3" id="dropZone" onclick="document.getElementById('archivoExcel').click()">
+            <div class="icon-upload mb-2">
+              <i class="bi bi-file-earmark-spreadsheet" id="dropIcon"></i>
+            </div>
+            <p class="fw-semibold mb-1" id="dropText">Arrastra el Excel aquí</p>
+            <p class="text-muted mb-0" style="font-size:.8rem;" id="dropSub">o haz clic para seleccionar</p>
+            <input type="file" id="archivoExcel" name="archivo_excel"
+                   accept=".xlsx" class="d-none" onchange="archivoSeleccionado(this)">
+          </div>
+
+          <!-- Info formato -->
+          <div class="alert alert-info py-2 px-3" style="font-size:.78rem;">
+            <i class="bi bi-info-circle me-1"></i>
+            <strong>Formato esperado:</strong> Lista OFPROBOL con columnas: Nº, Apellido Paterno,
+            Apellido Materno, Nombre, Sexo, Fecha Nacimiento, Año, Meses, <strong>Sala</strong>,
+            Nombre Tutor, Ocupación, Carrera, Año/Semestre, Turno, Celular.
+            Los datos empiezan en la <strong>fila 4</strong>.
+          </div>
+
+          <!-- Qué hace -->
+          <div class="mb-3">
+            <p class="fw-semibold mb-2" style="font-size:.83rem;">¿Qué hace la importación?</p>
+            <ul style="font-size:.78rem; color:#475569; padding-left:1.2rem;" class="mb-0">
+              <li>Crea los <strong>niños</strong> en el sistema con sala asignada</li>
+              <li>Si el tutor dice <span class="badge-itdb">ESTUDIANTE ITDB</span> → lo registra como <strong>Padre/IDS</strong></li>
+              <li>Si es otro trabajo → lo registra como <strong>Padre/Externo</strong></li>
+              <li>Si ya existe un niño con mismo nombre + fecha de nacimiento, lo <span class="text-warning fw-bold">omite</span> (no duplica)</li>
+              <li>Si ya existe un tutor con el mismo celular, lo <span class="text-primary fw-bold">reutiliza</span></li>
+              <li>Los CI de tutores sin CI se generan automáticamente con prefijo <code>IMP-</code></li>
+            </ul>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 fw-bold" id="btnImportar" disabled>
+            <i class="bi bi-cloud-upload me-2"></i>Importar datos
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── Resultados ── -->
+    <div class="col-12 col-lg-8">
+
+      {% if procesado %}
+      <!-- Stats -->
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+          <div class="stat-box bg-success-soft">
+            <div class="num">{{ stats.creados }}</div>
+            <div class="lbl">✅ Creados</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat-box bg-warning-soft">
+            <div class="num">{{ stats.existentes }}</div>
+            <div class="lbl">⚠ Ya existían</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat-box bg-danger-soft">
+            <div class="num">{{ stats.errores }}</div>
+            <div class="lbl">❌ Errores</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat-box bg-info-soft">
+            <div class="num">{{ stats.tutores_creados }}</div>
+            <div class="lbl">👤 Tutores nuevos</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra progreso visual -->
+      {% with total=resultados|length %}
+      {% if total > 0 %}
+      <div class="import-card p-3 mb-3">
+        <div class="d-flex justify-content-between mb-1" style="font-size:.8rem;">
+          <span class="text-muted">Total de filas procesadas: <strong>{{ total }}</strong></span>
+          <span class="text-success fw-bold">{{ stats.creados }} nuevos</span>
+        </div>
+        <div class="progress" style="height:10px; border-radius:8px;">
+          {% if total > 0 %}
+          <div class="progress-bar bg-success progress-bar-anim"
+               style="width:{% widthratio stats.creados total 100 %}%"></div>
+          <div class="progress-bar bg-warning progress-bar-anim"
+               style="width:{% widthratio stats.existentes total 100 %}%"></div>
+          <div class="progress-bar bg-danger progress-bar-anim"
+               style="width:{% widthratio stats.errores total 100 %}%"></div>
+          {% endif %}
+        </div>
+        <div class="d-flex gap-3 mt-1" style="font-size:.7rem;">
+          <span><span style="color:#166534">■</span> Creados</span>
+          <span><span style="color:#854D0E">■</span> Existentes</span>
+          <span><span style="color:#991B1B">■</span> Errores</span>
+        </div>
+      </div>
+      {% endif %}
+      {% endwith %}
+
+      <!-- Tabla resultados -->
+      <div class="import-card">
+        <div class="d-flex align-items-center justify-content-between p-3 border-bottom">
+          <h6 class="fw-bold mb-0">Detalle de importación</h6>
+          <!-- Filtros rápidos -->
+          <div class="btn-group btn-group-sm" role="group">
+            <button class="btn btn-outline-secondary active" onclick="filtrar('todos', this)">Todos</button>
+            <button class="btn btn-outline-success" onclick="filtrar('creado', this)">Creados</button>
+            <button class="btn btn-outline-warning" onclick="filtrar('existente', this)">Existentes</button>
+            <button class="btn btn-outline-danger" onclick="filtrar('error', this)">Errores</button>
+          </div>
+        </div>
+        <div style="max-height:480px; overflow-y:auto;">
+          <table class="table table-sm results-table mb-0">
+            <thead>
+              <tr>
+                <th class="ps-3">#</th>
+                <th>Niño</th>
+                <th>Sala</th>
+                <th>Tutor</th>
+                <th>Estado</th>
+                <th>Notas</th>
+              </tr>
+            </thead>
+            <tbody id="tablaBody">
+              {% for r in resultados %}
+              <tr class="row-{{ r.estado }}" data-estado="{{ r.estado }}">
+                <td class="ps-3 text-muted">{{ r.fila }}</td>
+                <td class="fw-semibold">{{ r.nino }}</td>
+                <td>
+                  {% if r.sala %}
+                    {% if 'LACTANT' in r.sala %}
+                    <span class="sala-tag sala-LACTANTES">Lactantes</span>
+                    {% elif 'INFANTE II A' in r.sala or 'INFANTE IIA' in r.sala %}
+                    <span class="sala-tag sala-INFANTE-IIA">Inf. II A</span>
+                    {% elif 'INFANTE II B' in r.sala or 'INFANTE IIB' in r.sala %}
+                    <span class="sala-tag sala-INFANTE-IIB">Inf. II B</span>
+                    {% elif 'INFANTE I' in r.sala %}
+                    <span class="sala-tag sala-INFANTE-I">Inf. I</span>
+                    {% else %}
+                    <span class="sala-tag sala-INFANTE-I">{{ r.sala }}</span>
+                    {% endif %}
+                  {% else %}
+                    <span class="text-muted" style="font-size:.75rem;">Sin sala</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div style="max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{{ r.tutor }}">
+                    {{ r.tutor|truncatechars:28 }}
+                  </div>
+                  {% if r.es_itdb %}
+                  <span class="badge-itdb">IDS</span>
+                  {% else %}
+                  <span class="badge-ext">EXTERNO</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if r.estado == 'creado' %}
+                  <span class="badge bg-success">✅ Creado</span>
+                  {% elif r.estado == 'existente' %}
+                  <span class="badge bg-warning text-dark">⚠ Existente</span>
+                  {% elif r.estado == 'error' %}
+                  <span class="badge bg-danger">❌ Error</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if r.mensaje %}
+                  <div style="font-size:.75rem; color:#64748B;">{{ r.mensaje }}</div>
+                  {% endif %}
+                  {% if r.advertencias %}
+                  <ul class="warn-list mt-1">
+                    {% for adv in r.advertencias %}
+                    <li>{{ adv }}</li>
+                    {% endfor %}
+                  </ul>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                  No se procesaron filas.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Botones post-importación -->
+      {% if stats.creados > 0 %}
+      <div class="mt-3 d-flex gap-2 flex-wrap">
+        <a href="{% url 'ninos:lista_ninos' %}" class="btn btn-primary">
+          <i class="bi bi-people me-2"></i>Ver lista de niños
+        </a>
+        <a href="{% url 'ninos:exportar_excel_ninos' %}" class="btn btn-outline-success">
+          <i class="bi bi-file-earmark-excel me-2"></i>Exportar Excel actualizado
+        </a>
+      </div>
+      {% endif %}
+
+      {% else %}
+      <!-- Estado vacío -->
+      <div class="import-card p-5 text-center">
+        <i class="bi bi-file-earmark-spreadsheet" style="font-size:4rem; color:#CBD5E1;"></i>
+        <h5 class="mt-3 text-muted">Sube el archivo para importar</h5>
+        <p class="text-muted" style="font-size:.87rem;">
+          Selecciona tu archivo <strong>LISTA_OFPROBOL.xlsx</strong> en el panel izquierdo
+          y haz clic en <em>Importar datos</em>.
+        </p>
+        <div class="mt-3">
+          <span class="badge bg-light text-dark border me-2">
+            <i class="bi bi-check2 text-success me-1"></i>Crea niños automáticamente
+          </span>
+          <span class="badge bg-light text-dark border me-2">
+            <i class="bi bi-check2 text-success me-1"></i>Detecta duplicados
+          </span>
+          <span class="badge bg-light text-dark border">
+            <i class="bi bi-check2 text-success me-1"></i>Registra tutores
+          </span>
+        </div>
+      </div>
+      {% endif %}
+
+    </div><!-- col resultados -->
+  </div><!-- row -->
+</div><!-- container -->
+
+<script>
+// ── Drop zone ──────────────────────────────────────────────────────────
+const dropZone = document.getElementById('dropZone');
+const input    = document.getElementById('archivoExcel');
+const btnImp   = document.getElementById('btnImportar');
+const dropText = document.getElementById('dropText');
+const dropSub  = document.getElementById('dropSub');
+const dropIcon = document.getElementById('dropIcon');
+
+function archivoSeleccionado(inp) {
+  if (inp.files && inp.files[0]) {
+    const f = inp.files[0];
+    dropZone.classList.add('file-ready');
+    dropIcon.className = 'bi bi-file-earmark-check';
+    dropText.textContent = f.name;
+    dropSub.textContent  = (f.size / 1024).toFixed(1) + ' KB — listo para importar';
+    btnImp.disabled = false;
+  }
+}
+
+['dragover','dragenter'].forEach(evt => dropZone.addEventListener(evt, e => {
+  e.preventDefault(); dropZone.classList.add('drag-over');
+}));
+['dragleave','dragend'].forEach(evt => dropZone.addEventListener(evt, () => {
+  dropZone.classList.remove('drag-over');
+}));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  if (e.dataTransfer.files.length) {
+    input.files = e.dataTransfer.files;
+    archivoSeleccionado(input);
+  }
+});
+
+// ── Loading overlay ────────────────────────────────────────────────────
+document.getElementById('importForm').addEventListener('submit', () => {
+  if (!input.files || !input.files[0]) return;
+  document.getElementById('loadingOverlay').style.display = 'flex';
+});
+
+// ── Filtros de tabla ───────────────────────────────────────────────────
+function filtrar(estado, btn) {
+  // Activar botón
+  document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Filtrar filas
+  document.querySelectorAll('#tablaBody tr[data-estado]').forEach(tr => {
+    tr.style.display = (estado === 'todos' || tr.dataset.estado === estado) ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}

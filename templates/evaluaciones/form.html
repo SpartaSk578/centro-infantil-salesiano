@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block page_title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm" style="border-radius:16px; max-width:750px; margin:0 auto;">
+    <div class="card-body p-4">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Niño/a <span class="text-danger">*</span></label>
+                    {{ form.id_nino }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Fecha</label>
+                    {{ form.fecha }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Período</label>
+                    {{ form.periodo }}
+                </div>
+            </div>
+
+            <hr class="my-3">
+            <h6 class="fw-bold text-primary mb-3"><i class="bi bi-graph-up me-2"></i>Escala Abreviada de Desarrollo</h6>
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Motricidad Gruesa</label>
+                    {{ form.motricidad_gruesa }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Motricidad Fina</label>
+                    {{ form.motricidad_fina }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Audición y Lenguaje</label>
+                    {{ form.audicion_lenguaje }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Personal y Social</label>
+                    {{ form.personal_social }}
+                </div>
+            </div>
+
+            <hr class="my-3">
+            <h6 class="fw-bold text-primary mb-3"><i class="bi bi-activity me-2"></i>Datos Antropométricos</h6>
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Peso (kg)</label>
+                    {{ form.peso_kg }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Talla (cm)</label>
+                    {{ form.talla_cm }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Clasificación</label>
+                    {{ form.clasificacion }}
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">Observaciones</label>
+                {{ form.resultados }}
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary fw-bold px-4">
+                    <i class="bi bi-check-lg me-1"></i>Guardar
+                </button>
+                <a href="{% url 'evaluaciones:lista_evaluaciones' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

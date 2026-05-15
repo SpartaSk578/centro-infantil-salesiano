@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Grupos/Salas — Centro Infantil{% endblock %}
+{% block page_title %}<i class="bi bi-collection me-2"></i>Grupos / Salas{% endblock %}
+
+{% block content %}
+
+<style>
+.sala-card { border-radius: 16px; transition: transform 0.2s, box-shadow 0.2s; border: none; overflow: hidden; }
+.sala-card:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(0,0,0,0.12) !important; }
+.sala-header { height: 8px; width: 100%; }
+/* Colores por sala */
+.sala-LACTANTES   .sala-header { background: #4CAF50; }
+.sala-LACTANTES   .sala-icon   { background: #E2EFDA; color: #166534; }
+.sala-LACTANTES   .sala-badge  { background: #E2EFDA; color: #166534; }
+.sala-INFANTE-I   .sala-header { background: #64748B; }
+.sala-INFANTE-I   .sala-icon   { background: #F1F5F9; color: #334155; }
+.sala-INFANTE-I   .sala-badge  { background: #F1F5F9; color: #334155; }
+.sala-INFANTE-IIA .sala-header { background: #EA580C; }
+.sala-INFANTE-IIA .sala-icon   { background: #FCE4D6; color: #9A3412; }
+.sala-INFANTE-IIA .sala-badge  { background: #FCE4D6; color: #9A3412; }
+.sala-INFANTE-IIB .sala-header { background: #2563EB; }
+.sala-INFANTE-IIB .sala-icon   { background: #DBEAFE; color: #1E3A8A; }
+.sala-INFANTE-IIB .sala-badge  { background: #DBEAFE; color: #1E3A8A; }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h5 class="fw-bold mb-0">Listado de Salas</h5>
+    {% if user.id_rol and user.id_rol.nombre_rol != 'Educadora' %}
+    <a href="{% url 'grupos:crear_grupo' %}" class="btn btn-primary fw-bold" style="border-radius:10px;">
+        <i class="bi bi-plus-lg me-2"></i>Nuevo Grupo
+    </a>
+    {% endif %}
+</div>
+
+<div class="row g-4">
+    {% for g in grupos %}
+
+    {% with nombre=g.nombre_grupo|upper %}
+    {% if 'LACTANTE' in nombre %}
+        {% with clase='sala-LACTANTES' %}
+    {% elif 'INFANTE II A' in nombre or 'INFANTE IIA' in nombre %}
+        {% with clase='sala-INFANTE-IIA' %}
+    {% elif 'INFANTE II B' in nombre or 'INFANTE IIB' in nombre %}
+        {% with clase='sala-INFANTE-IIB' %}
+    {% elif 'INFANTE I' in nombre %}
+        {% with clase='sala-INFANTE-I' %}
+    {% else %}
+        {% with clase='' %}
+    {% endif %}
+
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm h-100 sala-card {{ clase }}">
+            <div class="sala-header"></div>
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="rounded-circle p-3 sala-icon">
+                        <i class="bi bi-door-open fs-4"></i>
+                    </div>
+                    <span class="badge rounded-pill px-3 py-2 sala-badge fw-bold" style="font-size:.8rem;">
+                        {{ g.ninos.count }} niños
+                    </span>
+                </div>
+
+                <h5 class="fw-bold mb-1">{{ g.nombre_grupo }}</h5>
+                <p class="text-muted small mb-3">
+                    <i class="bi bi-person-badge me-1"></i>
+                    {% if g.educador_responsable %}
+                        {{ g.educador_responsable.get_full_name }}
+                    {% else %}
+                        Sin educador asignado
+                    {% endif %}
+                </p>
+
+                <div class="d-flex gap-2">
+                    <a href="{% url 'grupos:detalle_grupo' g.pk %}" class="btn btn-outline-primary flex-grow-1" style="border-radius:10px;">
+                        <i class="bi bi-eye me-1"></i> Ver
+                    </a>
+                    {% if user.id_rol and user.id_rol.nombre_rol != 'Educadora' %}
+                    <a href="{% url 'grupos:editar_grupo' g.pk %}" class="btn btn-light" style="border-radius:10px;" title="Editar">
+                        <i class="bi bi-pencil text-secondary"></i>
+                    </a>
+                    <a href="{% url 'grupos:eliminar_grupo' g.pk %}" class="btn btn-light" style="border-radius:10px;" title="Eliminar">
+                        <i class="bi bi-trash text-danger"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% endwith %}
+    {% endwith %}
+
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <div class="text-muted">
+            <i class="bi bi-folder-x fs-1 d-block mb-3 opacity-25"></i>
+            <p>No hay grupos o salas registradas actualmente.</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

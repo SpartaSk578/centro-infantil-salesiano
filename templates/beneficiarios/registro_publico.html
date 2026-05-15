@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Registro de Beneficiario — Centro Infantil Salesiano</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body{font-family:'Nunito',sans-serif;background:#F1F5F9;min-height:100vh;}
+        .form-label{font-weight:700;font-size:.8rem;color:#64748B;text-transform:uppercase;letter-spacing:.04em;}
+        .form-control{border-radius:8px;border:1.5px solid #E2E8F0;}
+        .form-control:focus{border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+        /* Estilo para los errores en rojo */
+        .error-text { color: #dc3545; font-size: 0.75rem; font-weight: 700; margin-top: 5px; display: block; }
+    </style>
+</head>
+<body>
+<div class="container py-5" style="max-width:600px;">
+    <div class="text-center mb-4">
+        <div style="width:60px;height:60px;background:#F59E0B;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto .75rem;">🏫</div>
+        <h3 class="fw-bold">Registro de Padre / Tutor</h3>
+        <p class="text-muted">Centro Infantil Salesiano Don Bosco</p>
+    </div>
+
+    {% for msg in messages %}
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-2"></i>{{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+
+    <div class="card border-0 shadow-sm" style="border-radius:16px;">
+        <div class="card-body p-4">
+            <form method="post">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">CI / Documento de identidad *</label>
+                        {{ form.CI_beneficiario }}
+                        {% if form.CI_beneficiario.errors %}
+                            <span class="error-text"><i class="bi bi-exclamation-circle me-1"></i>{{ form.CI_beneficiario.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Nombres *</label>
+                        {{ form.nombres }}
+                        {% if form.nombres.errors %}
+                            <span class="error-text"><i class="bi bi-exclamation-circle me-1"></i>{{ form.nombres.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Apellidos *</label>
+                        {{ form.apellidos }}
+                        {% if form.apellidos.errors %}
+                            <span class="error-text"><i class="bi bi-exclamation-circle me-1"></i>{{ form.apellidos.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Teléfono</label>
+                        {{ form.telefono }}
+                        {% if form.telefono.errors %}
+                            <span class="error-text"><i class="bi bi-exclamation-circle me-1"></i>{{ form.telefono.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Dirección</label>
+                        {{ form.direccion }}
+                        {% if form.direccion.errors %}
+                            <span class="error-text"><i class="bi bi-exclamation-circle me-1"></i>{{ form.direccion.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mt-4 py-2 fw-bold">
+                    <i class="bi bi-check-circle me-2"></i>Enviar Registro
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="text-center mt-3">
+        <a href="{% url 'login' %}" class="text-muted" style="font-size:.85rem;">¿Eres personal del centro? Inicia sesión →</a>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

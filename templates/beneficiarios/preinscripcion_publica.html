@@ -1,0 +1,752 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pre-Inscripción — Centro Infantil Don Bosco</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --azul:#1E40AF;--azul-vivo:#2563EB;--dorado:#F59E0B;--verde:#10B981;
+  --rojo:#EF4444;--fondo:#EFF6FF;--blanco:#fff;
+}
+*{font-family:'Nunito',sans-serif;box-sizing:border-box;}
+body{background:linear-gradient(150deg,#DBEAFE 0%,#EFF6FF 40%,#E0F2FE 100%);min-height:100vh;}
+h1,h2,h3,h4{font-family:'Poppins',sans-serif;}
+
+.hdr{background:linear-gradient(135deg,var(--azul) 0%,var(--azul-vivo) 100%);
+  padding:1.8rem 1rem;text-align:center;box-shadow:0 4px 24px rgba(30,64,175,.35);}
+.hdr img{width:80px;height:80px;border-radius:50%;border:3px solid rgba(255,255,255,.8);object-fit:cover;margin-bottom:.75rem;}
+.hdr h1{color:#fff;font-size:1.45rem;font-weight:800;margin:0;}
+.hdr p{color:rgba(255,255,255,.8);font-size:.85rem;margin:.25rem 0 0;}
+
+.wiz{max-width:820px;margin:2rem auto;padding:0 1rem 3rem;}
+
+.steps-bar{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:2rem;}
+.step-item{display:flex;flex-direction:column;align-items:center;gap:.3rem;flex:1;max-width:160px;}
+.step-circle{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:1rem;border:3px solid #CBD5E1;background:#fff;color:#94A3B8;transition:.3s;}
+.step-circle.active{border-color:var(--azul-vivo);background:var(--azul-vivo);color:#fff;box-shadow:0 0 0 4px rgba(37,99,235,.2);}
+.step-circle.done{border-color:var(--verde);background:var(--verde);color:#fff;}
+.step-label{font-size:.72rem;font-weight:700;color:#94A3B8;text-align:center;}
+.step-label.active{color:var(--azul-vivo);}
+.step-label.done{color:var(--verde);}
+.step-line{flex:1;height:3px;background:#CBD5E1;margin-bottom:1.2rem;border-radius:99px;transition:.3s;}
+.step-line.done{background:var(--verde);}
+
+.wiz-card{background:#fff;border-radius:20px;box-shadow:0 8px 40px rgba(30,64,175,.1);overflow:hidden;}
+.wiz-card-header{background:linear-gradient(90deg,var(--azul),var(--azul-vivo));
+  padding:1.2rem 1.75rem;display:flex;align-items:center;gap:.75rem;}
+.wiz-card-header i{font-size:1.6rem;color:rgba(255,255,255,.9);}
+.wiz-card-header h2{color:#fff;font-size:1.1rem;font-weight:700;margin:0;}
+.wiz-card-header p{color:rgba(255,255,255,.75);font-size:.8rem;margin:0;}
+
+.wiz-body{padding:1.75rem;}
+.section-sep{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;
+  color:#64748B;border-bottom:2px solid #E2E8F0;padding-bottom:.5rem;margin-bottom:1.25rem;margin-top:1.5rem;}
+.section-sep:first-child{margin-top:0;}
+
+.form-label{font-weight:700;font-size:.83rem;color:#374151;margin-bottom:.3rem;}
+.required-star{color:var(--rojo);}
+.form-control,.form-select{border-radius:10px;border:2px solid #E2E8F0;font-size:.9rem;padding:.6rem .85rem;transition:.2s;}
+.form-control:focus,.form-select:focus{border-color:var(--azul-vivo);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+.form-control.is-invalid,.form-select.is-invalid{border-color:var(--rojo);}
+.invalid-feedback{font-size:.78rem;font-weight:600;}
+.field-hint{font-size:.75rem;color:#94A3B8;margin-top:.25rem;}
+
+/* PHOTO UPLOAD ZONES */
+.upload-zone{border:2.5px dashed #CBD5E1;border-radius:14px;padding:1.2rem;
+  text-align:center;cursor:pointer;transition:.3s;background:#FAFBFF;position:relative;}
+.upload-zone:hover{border-color:var(--azul-vivo);background:#EFF6FF;}
+.upload-zone .uz-icon{font-size:2rem;color:#94A3B8;margin-bottom:.4rem;}
+.upload-zone .uz-title{font-weight:700;color:#64748B;font-size:.88rem;}
+.upload-zone .uz-hint{font-size:.75rem;color:#94A3B8;margin-top:.2rem;}
+
+/* Preview circular para foto de perfil */
+.perfil-preview-wrap{width:90px;height:90px;border-radius:50%;overflow:hidden;
+  border:3px solid var(--azul-vivo);margin:0 auto .5rem;display:none;}
+.perfil-preview-wrap img{width:100%;height:100%;object-fit:cover;}
+
+/* Preview cuadrado para documento */
+.doc-preview-wrap{width:100%;max-height:160px;border-radius:10px;overflow:hidden;
+  border:2px solid #CBD5E1;margin-top:.5rem;display:none;}
+.doc-preview-wrap img{width:100%;height:160px;object-fit:cover;}
+
+/* Botones cámara/galería */
+.capture-btns{display:flex;gap:.5rem;justify-content:center;margin-top:.6rem;flex-wrap:wrap;}
+.btn-capture{padding:.4rem 1rem;border-radius:10px;font-size:.8rem;font-weight:700;
+  border:none;cursor:pointer;display:flex;align-items:center;gap:.4rem;}
+.btn-galeria{background:#EFF6FF;color:var(--azul-vivo);border:1.5px solid #BFDBFE;}
+.btn-camara{background:var(--azul-vivo);color:white;}
+.btn-camara-doc{background:#475569;color:white;}
+
+/* Cámara en vivo */
+.camara-vivo{background:#0f172a;border-radius:12px;padding:.75rem;margin-top:.75rem;display:none;}
+.camara-vivo video{width:100%;max-width:300px;border-radius:8px;display:block;margin:0 auto;}
+.camara-btns{display:flex;gap:.5rem;justify-content:center;margin-top:.5rem;}
+
+.photo-upload-zone{border:2.5px dashed #CBD5E1;border-radius:14px;padding:1.5rem;
+  text-align:center;cursor:pointer;transition:.3s;background:#FAFBFF;}
+.photo-upload-zone:hover{border-color:var(--azul-vivo);background:#EFF6FF;}
+.photo-preview{width:90px;height:90px;border-radius:50%;object-fit:cover;
+  border:3px solid var(--azul-vivo);margin-bottom:.5rem;display:none;}
+
+.wiz-nav{display:flex;justify-content:space-between;align-items:center;
+  padding:1.25rem 1.75rem;border-top:2px solid #F1F5F9;background:#FAFBFF;}
+.btn-nav{padding:.7rem 2rem;border-radius:12px;font-weight:700;font-size:.9rem;
+  display:flex;align-items:center;gap:.5rem;}
+.btn-next{background:var(--azul-vivo);color:#fff;border:none;}
+.btn-next:hover{background:var(--azul);color:#fff;}
+.btn-back{background:#F1F5F9;color:#374151;border:none;}
+.btn-back:hover{background:#E2E8F0;}
+.btn-submit{background:var(--verde);color:#fff;border:none;}
+.btn-submit:hover{background:#059669;}
+
+.resumen-block{background:#F8FAFC;border:1.5px solid #E2E8F0;border-radius:14px;padding:1.25rem;margin-bottom:1rem;}
+.resumen-block h5{font-size:.85rem;font-weight:800;color:var(--azul);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem;}
+.resumen-row{display:flex;gap:.5rem;margin-bottom:.4rem;font-size:.88rem;}
+.resumen-key{font-weight:700;color:#374151;min-width:160px;flex-shrink:0;}
+.resumen-val{color:#64748B;}
+.badge-sala{background:#EFF6FF;color:var(--azul-vivo);border:1.5px solid #BFDBFE;border-radius:8px;padding:.25rem .65rem;font-size:.75rem;font-weight:700;}
+
+.success-card{text-align:center;padding:3rem 2rem;}
+.success-icon{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#D1FAE5,#A7F3D0);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:2.5rem;color:var(--verde);}
+
+.step-pane{display:none;}
+.step-pane.active{display:block;}
+
+@media(max-width:576px){
+  .steps-bar{gap:.25rem;}
+  .step-label{font-size:.62rem;}
+  .wiz-body{padding:1.25rem;}
+  .wiz-nav{padding:1rem 1.25rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <img src="{% static 'logo_don_bosco.jpeg' %}" alt="Logo" onerror="this.style.display='none'">
+  <h1>Centro Infantil Salesiano Don Bosco</h1>
+  <p>Formulario de Pre-Inscripción &mdash; Gestión 2025</p>
+</div>
+
+<div class="wiz">
+
+  {% if success %}
+  <div class="wiz-card">
+    <div class="success-card">
+      <div class="success-icon"><i class="bi bi-check-lg"></i></div>
+      <h2 style="color:#065F46;font-weight:800;margin-bottom:.5rem;">¡Solicitud Enviada!</h2>
+      <p style="color:#047857;font-size:.95rem;max-width:460px;margin:0 auto 2rem;">
+        Su pre-inscripción fue recibida correctamente. El equipo del centro revisará
+        los datos y se pondrá en contacto con usted a la brevedad.
+      </p>
+      <a href="{% url 'preinscripcion_publica' %}" class="btn btn-success fw-bold px-4 py-2 rounded-3">
+        <i class="bi bi-plus-circle me-2"></i>Nueva Pre-Inscripción
+      </a>
+    </div>
+  </div>
+  {% else %}
+
+  <div class="steps-bar" id="stepsBar">
+    <div class="step-item">
+      <div class="step-circle active" id="sc1"><i class="bi bi-emoji-smile"></i></div>
+      <div class="step-label active" id="sl1">Datos del Niño/a</div>
+    </div>
+    <div class="step-line" id="line1"></div>
+    <div class="step-item">
+      <div class="step-circle" id="sc2">2</div>
+      <div class="step-label" id="sl2">Tutor / Padre / Madre</div>
+    </div>
+    <div class="step-line" id="line2"></div>
+    <div class="step-item">
+      <div class="step-circle" id="sc3">3</div>
+      <div class="step-label" id="sl3">Confirmación</div>
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" id="wizForm" novalidate>
+  {% csrf_token %}
+  <div class="wiz-card">
+
+    <!-- ══ PASO 1: NIÑO ══════════════════════════════════════════════ -->
+    <div class="step-pane active" id="pane1">
+      <div class="wiz-card-header">
+        <i class="bi bi-emoji-smile-fill"></i>
+        <div>
+          <h2>Datos del Niño/a</h2>
+          <p>Información del beneficiario (Paso 1 de 3)</p>
+        </div>
+      </div>
+      <div class="wiz-body">
+
+        <div class="section-sep"><i class="bi bi-person-vcard me-1"></i>Identificación</div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Apellido Paterno <span class="required-star">*</span></label>
+            <input type="text" name="apellido_paterno_nino" id="id_apellido_paterno_nino"
+              class="form-control{% if form.apellido_paterno_nino.errors %} is-invalid{% endif %}"
+              value="{{ form.apellido_paterno_nino.value|default:'' }}"
+              placeholder="Solo letras" maxlength="50" autocomplete="off">
+            {% if form.apellido_paterno_nino.errors %}<div class="invalid-feedback">{{ form.apellido_paterno_nino.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Apellido Materno</label>
+            <input type="text" name="apellido_materno_nino" id="id_apellido_materno_nino"
+              class="form-control{% if form.apellido_materno_nino.errors %} is-invalid{% endif %}"
+              value="{{ form.apellido_materno_nino.value|default:'' }}"
+              placeholder="Solo letras (opcional)" maxlength="50">
+            {% if form.apellido_materno_nino.errors %}<div class="invalid-feedback">{{ form.apellido_materno_nino.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-md-12">
+            <label class="form-label">Nombre(s) <span class="required-star">*</span></label>
+            <input type="text" name="nombres_nino" id="id_nombres_nino"
+              class="form-control{% if form.nombres_nino.errors %} is-invalid{% endif %}"
+              value="{{ form.nombres_nino.value|default:'' }}"
+              placeholder="Solo letras" maxlength="100">
+            {% if form.nombres_nino.errors %}<div class="invalid-feedback">{{ form.nombres_nino.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="section-sep mt-4"><i class="bi bi-calendar3 me-1"></i>Información Personal</div>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Sexo <span class="required-star">*</span></label>
+            <select name="sexo_nino" id="id_sexo_nino"
+              class="form-select{% if form.sexo_nino.errors %} is-invalid{% endif %}">
+              <option value="">— Seleccionar —</option>
+              <option value="M" {% if form.sexo_nino.value == "M" %}selected{% endif %}>Masculino</option>
+              <option value="F" {% if form.sexo_nino.value == "F" %}selected{% endif %}>Femenino</option>
+            </select>
+            {% if form.sexo_nino.errors %}<div class="invalid-feedback">{{ form.sexo_nino.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Fecha de Nacimiento <span class="required-star">*</span></label>
+            <input type="date" name="fecha_nacimiento_nino" id="id_fecha_nacimiento_nino"
+              class="form-control{% if form.fecha_nacimiento_nino.errors %} is-invalid{% endif %}"
+              value="{{ form.fecha_nacimiento_nino.value|default:'' }}"
+              max="{% now 'Y-m-d' %}">
+            {% if form.fecha_nacimiento_nino.errors %}<div class="invalid-feedback">{{ form.fecha_nacimiento_nino.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Sala Solicitada <span class="required-star">*</span></label>
+            <select name="sala_solicitada" id="id_sala_solicitada"
+              class="form-select{% if form.sala_solicitada.errors %} is-invalid{% endif %}">
+              <option value="">— Seleccionar —</option>
+              <option value="LACTANTES" {% if form.sala_solicitada.value == "LACTANTES" %}selected{% endif %}>🟢 Lactantes</option>
+              <option value="INFANTE I" {% if form.sala_solicitada.value == "INFANTE I" %}selected{% endif %}>⚪ Infante I</option>
+              <option value="INFANTE II A" {% if form.sala_solicitada.value == "INFANTE II A" %}selected{% endif %}>🟠 Infante II A</option>
+              <option value="INFANTE II B" {% if form.sala_solicitada.value == "INFANTE II B" %}selected{% endif %}>🔵 Infante II B</option>
+            </select>
+            {% if form.sala_solicitada.errors %}<div class="invalid-feedback">{{ form.sala_solicitada.errors.0 }}</div>{% endif %}
+            <div class="field-hint" id="sala-hint"></div>
+          </div>
+        </div>
+
+        <div class="section-sep mt-4"><i class="bi bi-camera me-1"></i>Fotografía del Niño/a (Opcional)</div>
+        <div class="photo-upload-zone" id="photoZone" onclick="document.getElementById('id_foto_nino').click()">
+          <img id="photoPreview" class="photo-preview" src="" alt="preview">
+          <div id="photoPlaceholder">
+            <div style="font-size:2rem;color:#94A3B8;margin-bottom:.4rem;"><i class="bi bi-person-bounding-box"></i></div>
+            <div style="font-weight:700;color:#64748B;font-size:.9rem;">Foto del niño/a</div>
+            <div style="font-size:.78rem;color:#94A3B8;margin-top:.3rem;">Haz clic para seleccionar o tomar foto</div>
+          </div>
+        </div>
+        <input type="file" name="foto_nino" id="id_foto_nino" accept="image/*" style="display:none">
+
+      </div>
+      <div class="wiz-nav">
+        <div></div>
+        <button type="button" class="btn btn-nav btn-next" onclick="irPaso(2)">
+          Siguiente <i class="bi bi-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ PASO 2: TUTOR ═════════════════════════════════════════════ -->
+    <div class="step-pane" id="pane2">
+      <div class="wiz-card-header">
+        <i class="bi bi-person-heart"></i>
+        <div>
+          <h2>Tutor / Padre / Madre</h2>
+          <p>Datos del responsable del niño/a (Paso 2 de 3)</p>
+        </div>
+      </div>
+      <div class="wiz-body">
+
+        <!-- FOTO DEL PADRE EXTERNO -->
+        <div class="section-sep"><i class="bi bi-person-circle me-1"></i>Foto del Padre / Externo</div>
+        <div class="row g-3 align-items-center mb-2">
+          <div class="col-auto">
+            <div id="tutor-perfil-wrap" class="perfil-preview-wrap">
+              <img id="tutor-perfil-img" src="" alt="foto tutor">
+            </div>
+            <div id="tutor-perfil-placeholder" class="upload-zone" style="width:90px;height:90px;border-radius:50%;padding:.5rem;"
+                 onclick="document.getElementById('id_foto_tutor').click()">
+              <i class="bi bi-person-circle uz-icon" style="font-size:2.2rem;"></i>
+            </div>
+          </div>
+          <div class="col">
+            <div class="uz-title mb-1">Foto de perfil del tutor</div>
+            <div class="uz-hint mb-2">Sube una foto o tómala con la cámara frontal</div>
+            <div class="capture-btns justify-content-start">
+              <label for="id_foto_tutor" class="btn-capture btn-galeria" style="cursor:pointer;">
+                <i class="bi bi-images"></i> Galería
+              </label>
+              <button type="button" class="btn-capture btn-camara" onclick="abrirCamara('tutor-perfil')">
+                <i class="bi bi-camera-fill"></i> Cámara
+              </button>
+            </div>
+          </div>
+        </div>
+        <input type="file" name="foto_tutor" id="id_foto_tutor" accept="image/*" style="position:absolute;opacity:0;width:1px;height:1px;">
+        <!-- Video cámara foto perfil -->
+        <div class="camara-vivo" id="camara-tutor-perfil">
+          <video id="video-tutor-perfil" autoplay playsinline></video>
+          <canvas id="canvas-tutor-perfil" style="display:none;"></canvas>
+          <div class="camara-btns">
+            <button type="button" class="btn btn-success btn-sm rounded-pill px-3" onclick="capturar('tutor-perfil')">
+              <i class="bi bi-camera me-1"></i> Capturar
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" onclick="cerrarCamara('tutor-perfil')">Cancelar</button>
+          </div>
+        </div>
+
+        <!-- DOCUMENTO ADJUNTO -->
+        <div class="section-sep mt-4"><i class="bi bi-file-earmark-image me-1"></i>Documento Adjunto <small style="font-size:.75rem;font-weight:400;color:#94A3B8;">(Carnet, Matrícula — Opcional)</small></div>
+        <div class="row g-3 align-items-center mb-2">
+          <div class="col-auto">
+            <div id="doc-preview-wrap" class="doc-preview-wrap" style="width:90px;height:90px;border-radius:10px;">
+              <img id="doc-preview-img" src="" alt="documento" style="height:90px;">
+            </div>
+            <div id="doc-placeholder" class="upload-zone" style="width:90px;height:90px;border-radius:10px;padding:.5rem;"
+                 onclick="document.getElementById('id_doc_tutor').click()">
+              <i class="bi bi-file-earmark uz-icon" style="font-size:2rem;"></i>
+            </div>
+          </div>
+          <div class="col">
+            <div class="uz-title mb-1">Carnet de identidad o matrícula</div>
+            <div class="uz-hint mb-2">Fotografía el documento o selecciónalo de tu galería</div>
+            <div class="capture-btns justify-content-start">
+              <label for="id_doc_tutor" class="btn-capture btn-galeria" style="cursor:pointer;">
+                <i class="bi bi-images"></i> Galería
+              </label>
+              <button type="button" class="btn-capture btn-camara-doc" onclick="abrirCamara('doc-tutor')">
+                <i class="bi bi-camera-fill"></i> Fotografiar
+              </button>
+            </div>
+            <div id="doc-nombre" class="field-hint mt-1" style="display:none;"></div>
+          </div>
+        </div>
+        <input type="file" name="doc_tutor" id="id_doc_tutor" accept="image/*,.pdf" style="position:absolute;opacity:0;width:1px;height:1px;">
+        <!-- Video cámara documento -->
+        <div class="camara-vivo" id="camara-doc-tutor">
+          <video id="video-doc-tutor" autoplay playsinline></video>
+          <canvas id="canvas-doc-tutor" style="display:none;"></canvas>
+          <div class="camara-btns">
+            <button type="button" class="btn btn-success btn-sm rounded-pill px-3" onclick="capturar('doc-tutor')">
+              <i class="bi bi-camera me-1"></i> Capturar
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm rounded-pill px-3" onclick="cerrarCamara('doc-tutor')">Cancelar</button>
+          </div>
+        </div>
+
+        <!-- DATOS PERSONALES -->
+        <div class="section-sep mt-4"><i class="bi bi-person-vcard me-1"></i>Datos Personales del Tutor</div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Apellido Paterno <span class="required-star">*</span></label>
+            <input type="text" name="apellido_paterno_tutor" id="id_apellido_paterno_tutor"
+              class="form-control{% if form.apellido_paterno_tutor.errors %} is-invalid{% endif %}"
+              value="{{ form.apellido_paterno_tutor.value|default:'' }}"
+              placeholder="Solo letras" maxlength="50">
+            {% if form.apellido_paterno_tutor.errors %}<div class="invalid-feedback">{{ form.apellido_paterno_tutor.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Apellido Materno</label>
+            <input type="text" name="apellido_materno_tutor" id="id_apellido_materno_tutor"
+              class="form-control{% if form.apellido_materno_tutor.errors %} is-invalid{% endif %}"
+              value="{{ form.apellido_materno_tutor.value|default:'' }}"
+              placeholder="Solo letras (opcional)" maxlength="50">
+            {% if form.apellido_materno_tutor.errors %}<div class="invalid-feedback">{{ form.apellido_materno_tutor.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-md-8">
+            <label class="form-label">Nombre(s) <span class="required-star">*</span></label>
+            <input type="text" name="nombres_tutor" id="id_nombres_tutor"
+              class="form-control{% if form.nombres_tutor.errors %} is-invalid{% endif %}"
+              value="{{ form.nombres_tutor.value|default:'' }}"
+              placeholder="Solo letras" maxlength="100">
+            {% if form.nombres_tutor.errors %}<div class="invalid-feedback">{{ form.nombres_tutor.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">C.I. <span class="required-star">*</span></label>
+            <input type="text" name="CI_tutor" id="id_CI_tutor"
+              class="form-control{% if form.CI_tutor.errors %} is-invalid{% endif %}"
+              value="{{ form.CI_tutor.value|default:'' }}"
+              placeholder="Solo números" inputmode="numeric" maxlength="15">
+            {% if form.CI_tutor.errors %}<div class="invalid-feedback">{{ form.CI_tutor.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Número de Celular <span class="required-star">*</span></label>
+            <input type="text" name="telefono" id="id_telefono"
+              class="form-control{% if form.telefono.errors %} is-invalid{% endif %}"
+              value="{{ form.telefono.value|default:'' }}"
+              placeholder="Solo números" inputmode="numeric" maxlength="15">
+            {% if form.telefono.errors %}<div class="invalid-feedback">{{ form.telefono.errors.0 }}</div>{% endif %}
+          </div>
+        </div>
+
+        <div class="section-sep mt-4"><i class="bi bi-briefcase me-1"></i>Ocupación</div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Ocupación <span class="required-star">*</span></label>
+            <select name="ocupacion" id="id_ocupacion"
+              class="form-select{% if form.ocupacion.errors %} is-invalid{% endif %}"
+              onchange="toggleOcupacion()">
+              <option value="">— Seleccionar —</option>
+              <option value="ESTUDIANTE_ITDB" {% if form.ocupacion.value == "ESTUDIANTE_ITDB" %}selected{% endif %}>Estudiante ITDB</option>
+              <option value="COMERCIANTE" {% if form.ocupacion.value == "COMERCIANTE" %}selected{% endif %}>Comerciante</option>
+              <option value="AYUDANTE_COSTURA" {% if form.ocupacion.value == "AYUDANTE_COSTURA" %}selected{% endif %}>Ayudante de Costura</option>
+              <option value="EMPLEADO_PUBLICO" {% if form.ocupacion.value == "EMPLEADO_PUBLICO" %}selected{% endif %}>Empleado Público</option>
+              <option value="AMA_DE_CASA" {% if form.ocupacion.value == "AMA_DE_CASA" %}selected{% endif %}>Ama de Casa</option>
+              <option value="INDEPENDIENTE" {% if form.ocupacion.value == "INDEPENDIENTE" %}selected{% endif %}>Trabajo Independiente</option>
+              <option value="DOCENTE" {% if form.ocupacion.value == "DOCENTE" %}selected{% endif %}>Docente</option>
+              <option value="OTRO" {% if form.ocupacion.value == "OTRO" %}selected{% endif %}>Otro</option>
+            </select>
+            {% if form.ocupacion.errors %}<div class="invalid-feedback">{{ form.ocupacion.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-md-6" id="divOcupDesc">
+            <label class="form-label">Especifique la ocupación</label>
+            <input type="text" name="ocupacion_descripcion" id="id_ocupacion_descripcion"
+              class="form-control"
+              value="{{ form.ocupacion_descripcion.value|default:'' }}"
+              placeholder="Detalle de su ocupación" maxlength="200">
+          </div>
+        </div>
+
+        <div id="seccionItdb" style="display:none;">
+          <div class="row g-3 mt-1">
+            <div class="col-md-5">
+              <label class="form-label">Carrera</label>
+              <select name="carrera" id="id_carrera" class="form-select">
+                <option value="">N/A</option>
+                <option value="CONTADURIA_GENERAL" {% if form.carrera.value == "CONTADURIA_GENERAL" %}selected{% endif %}>Contaduría General</option>
+                <option value="ELECTRICIDAD_INDUSTRIAL" {% if form.carrera.value == "ELECTRICIDAD_INDUSTRIAL" %}selected{% endif %}>Electricidad Industrial</option>
+                <option value="MECANICA_INDUSTRIAL" {% if form.carrera.value == "MECANICA_INDUSTRIAL" %}selected{% endif %}>Mecánica Industrial</option>
+                <option value="MECANICA_AUTOMOTRIZ" {% if form.carrera.value == "MECANICA_AUTOMOTRIZ" %}selected{% endif %}>Mecánica Automotriz</option>
+                <option value="ARTES_GRAFICAS" {% if form.carrera.value == "ARTES_GRAFICAS" %}selected{% endif %}>Artes Gráficas</option>
+                <option value="SECRETARIADO" {% if form.carrera.value == "SECRETARIADO" %}selected{% endif %}>Secretariado</option>
+                <option value="ADMINISTRACION" {% if form.carrera.value == "ADMINISTRACION" %}selected{% endif %}>Administración de Empresas</option>
+                <option value="DERECHO" {% if form.carrera.value == "DERECHO" %}selected{% endif %}>Derecho</option>
+                <option value="OTRA" {% if form.carrera.value == "OTRA" %}selected{% endif %}>Otra</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Año / Semestre</label>
+              <input type="text" name="anio_semestre" id="id_anio_semestre"
+                class="form-control" value="{{ form.anio_semestre.value|default:'' }}"
+                placeholder="Ej: 1er Año" maxlength="20">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Turno</label>
+              <select name="turno" id="id_turno" class="form-select">
+                <option value="">— N/A —</option>
+                <option value="MANANA" {% if form.turno.value == "MANANA" %}selected{% endif %}>Mañana</option>
+                <option value="TARDE" {% if form.turno.value == "TARDE" %}selected{% endif %}>Tarde</option>
+                <option value="NOCHE" {% if form.turno.value == "NOCHE" %}selected{% endif %}>Noche</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="wiz-nav">
+        <button type="button" class="btn btn-nav btn-back" onclick="irPaso(1)">
+          <i class="bi bi-arrow-left"></i> Anterior
+        </button>
+        <button type="button" class="btn btn-nav btn-next" onclick="irPaso(3)">
+          Siguiente <i class="bi bi-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ PASO 3: CONFIRMACIÓN ══════════════════════════════════════ -->
+    <div class="step-pane" id="pane3">
+      <div class="wiz-card-header">
+        <i class="bi bi-clipboard2-check-fill"></i>
+        <div>
+          <h2>Confirmación</h2>
+          <p>Revise los datos antes de enviar (Paso 3 de 3)</p>
+        </div>
+      </div>
+      <div class="wiz-body">
+        <div class="resumen-block">
+          <h5><i class="bi bi-emoji-smile me-1"></i>Datos del Niño/a</h5>
+          <div class="resumen-row"><span class="resumen-key">Apellido Paterno:</span><span class="resumen-val" id="r_ap_nino">—</span></div>
+          <div class="resumen-row"><span class="resumen-key">Apellido Materno:</span><span class="resumen-val" id="r_am_nino">—</span></div>
+          <div class="resumen-row"><span class="resumen-key">Nombres:</span><span class="resumen-val" id="r_nom_nino">—</span></div>
+          <div class="resumen-row"><span class="resumen-key">Sexo:</span><span class="resumen-val" id="r_sexo_nino">—</span></div>
+          <div class="resumen-row"><span class="resumen-key">Fecha de Nacimiento:</span><span class="resumen-val" id="r_fn_nino">—</span></div>
+          <div class="resumen-row"><span class="resumen-key">Sala Solicitada:</span><span class="resumen-val"><span class="badge-sala" id="r_sala">—</span></span></div>
+          <div class="resumen-row"><span class="resumen-key">Edad Estimada:</span><span class="resumen-val" id="r_edad">—</span></div>
+        </div>
+        <div class="resumen-block">
+          <h5><i class="bi bi-person-heart me-1"></i>Tutor / Padre / Madre</h5>
+          <!-- Mini foto del tutor en el resumen -->
+          <div id="r_foto_tutor_wrap" style="display:none;margin-bottom:.75rem;">
+            <img id="r_foto_tutor" src="" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid #BFDBFE;">
+          </div>
+          <div class="resumen-row"><span class="resumen-key">Nombre Completo:</span><span class="resumen-val" id="r_tutor_nombre">—</span></div>
+          <div class="resumen-row"><span class="resumen-key">C.I.:</span><span class="resumen-val" id="r_tutor_ci">—</span></div>
+          <div class="resumen-row"><span class="resumen-key">Ocupación:</span><span class="resumen-val" id="r_tutor_ocup">—</span></div>
+          <div class="resumen-row" id="r_carrera_row"><span class="resumen-key">Carrera / Año:</span><span class="resumen-val" id="r_tutor_carrera">—</span></div>
+          <div class="resumen-row" id="r_turno_row"><span class="resumen-key">Turno:</span><span class="resumen-val" id="r_tutor_turno">—</span></div>
+          <div class="resumen-row"><span class="resumen-key">Celular:</span><span class="resumen-val" id="r_tutor_tel">—</span></div>
+          <div class="resumen-row" id="r_doc_row" style="display:none;">
+            <span class="resumen-key">Documento adjunto:</span>
+            <span class="resumen-val"><span class="badge" style="background:#E2EFDA;color:#166534;">✓ Adjuntado</span></span>
+          </div>
+        </div>
+        <div class="alert alert-primary rounded-3" style="font-size:.85rem;">
+          <i class="bi bi-info-circle-fill me-2"></i>
+          Al enviar, el personal del centro revisará su solicitud y se comunicará con usted.
+        </div>
+      </div>
+      <div class="wiz-nav">
+        <button type="button" class="btn btn-nav btn-back" onclick="irPaso(2)">
+          <i class="bi bi-arrow-left"></i> Anterior
+        </button>
+        <button type="submit" class="btn btn-nav btn-submit">
+          <i class="bi bi-send-fill me-1"></i> Enviar Pre-Inscripción
+        </button>
+      </div>
+    </div>
+
+  </div>
+  </form>
+  {% endif %}
+</div>
+
+<script>
+let pasoActual = {% if form.apellido_paterno_nino.errors or form.nombres_nino.errors or form.sexo_nino.errors or form.fecha_nacimiento_nino.errors or form.sala_solicitada.errors %}1{% elif form.nombres_tutor.errors or form.apellido_paterno_tutor.errors or form.CI_tutor.errors or form.telefono.errors or form.ocupacion.errors %}2{% else %}1{% endif %};
+
+const streams = {};
+
+// ── CÁMARA ──────────────────────────────────────────────────────────────────
+async function abrirCamara(tipo) {
+  const facingMode = tipo === 'doc-tutor' ? 'environment' : 'user';
+  try {
+    streams[tipo] = await navigator.mediaDevices.getUserMedia({ video: { facingMode } });
+    document.getElementById('video-' + tipo).srcObject = streams[tipo];
+    document.getElementById('camara-' + tipo).style.display = 'block';
+  } catch(e) {
+    alert('No se pudo acceder a la cámara. Usa Galería.');
+  }
+}
+
+function capturar(tipo) {
+  const video = document.getElementById('video-' + tipo);
+  const canvas = document.getElementById('canvas-' + tipo);
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  canvas.toBlob(function(blob) {
+    const nombre = tipo === 'tutor-perfil' ? 'foto_tutor.jpg' : 'doc_tutor.jpg';
+    const inputId = tipo === 'tutor-perfil' ? 'id_foto_tutor' : 'id_doc_tutor';
+    const file = new File([blob], nombre, { type: 'image/jpeg' });
+    const dt = new DataTransfer(); dt.items.add(file);
+    document.getElementById(inputId).files = dt.files;
+    mostrarPreview(tipo, URL.createObjectURL(blob));
+    cerrarCamara(tipo);
+  }, 'image/jpeg', 0.92);
+}
+
+function cerrarCamara(tipo) {
+  if (streams[tipo]) { streams[tipo].getTracks().forEach(t => t.stop()); delete streams[tipo]; }
+  document.getElementById('camara-' + tipo).style.display = 'none';
+}
+
+function mostrarPreview(tipo, url) {
+  if (tipo === 'tutor-perfil') {
+    document.getElementById('tutor-perfil-img').src = url;
+    document.getElementById('tutor-perfil-wrap').style.display = 'block';
+    document.getElementById('tutor-perfil-placeholder').style.display = 'none';
+  } else {
+    document.getElementById('doc-preview-img').src = url;
+    document.getElementById('doc-preview-wrap').style.display = 'block';
+    document.getElementById('doc-placeholder').style.display = 'none';
+  }
+}
+
+// Listeners de inputs de archivo
+document.getElementById('id_foto_tutor').addEventListener('change', function(e) {
+  if (e.target.files[0]) mostrarPreview('tutor-perfil', URL.createObjectURL(e.target.files[0]));
+});
+document.getElementById('id_doc_tutor').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  document.getElementById('doc-nombre').textContent = file.name;
+  document.getElementById('doc-nombre').style.display = 'block';
+  if (file.type.startsWith('image/')) mostrarPreview('doc-tutor', URL.createObjectURL(file));
+  else {
+    document.getElementById('doc-preview-wrap').style.display = 'none';
+    document.getElementById('doc-placeholder').style.display = 'block';
+  }
+});
+
+// ── WIZARD ───────────────────────────────────────────────────────────────────
+function irPaso(n) {
+  if (n > pasoActual && !validarPaso(pasoActual)) return;
+  document.getElementById('pane' + pasoActual).classList.remove('active');
+  document.getElementById('pane' + n).classList.add('active');
+  pasoActual = n;
+  actualizarIndicador();
+  if (n === 3) actualizarResumen();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function actualizarIndicador() {
+  for (let i = 1; i <= 3; i++) {
+    const c = document.getElementById('sc' + i);
+    const l = document.getElementById('sl' + i);
+    c.className = 'step-circle' + (i < pasoActual ? ' done' : i === pasoActual ? ' active' : '');
+    l.className = 'step-label' + (i < pasoActual ? ' done' : i === pasoActual ? ' active' : '');
+    if (i < pasoActual) c.innerHTML = '<i class="bi bi-check-lg"></i>';
+    else if (i === 1) c.innerHTML = pasoActual === 1 ? '<i class="bi bi-emoji-smile"></i>' : '<i class="bi bi-check-lg"></i>';
+    else c.textContent = i;
+    if (i < 3) document.getElementById('line' + i).className = 'step-line' + (i < pasoActual ? ' done' : '');
+  }
+}
+
+function validarPaso(p) {
+  let ok = true;
+  if (p === 1) {
+    ok = validarCampo('id_apellido_paterno_nino','letras') &&
+         validarCampo('id_nombres_nino','letras') &&
+         validarCampo('id_sexo_nino','select') &&
+         validarCampo('id_fecha_nacimiento_nino','fecha') &&
+         validarCampo('id_sala_solicitada','select');
+  } else if (p === 2) {
+    ok = validarCampo('id_apellido_paterno_tutor','letras') &&
+         validarCampo('id_nombres_tutor','letras') &&
+         validarCampo('id_CI_tutor','numeros') &&
+         validarCampo('id_telefono','numeros') &&
+         validarCampo('id_ocupacion','select');
+  }
+  return ok;
+}
+
+function validarCampo(id, tipo) {
+  const el = document.getElementById(id);
+  if (!el) return true;
+  const v = el.value.trim();
+  let error = '';
+  if (!v) error = 'Este campo es requerido.';
+  else if (tipo === 'letras' && !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$/.test(v)) error = 'Solo se permiten letras.';
+  else if (tipo === 'numeros' && !/^\d+$/.test(v)) error = 'Solo se permiten números.';
+  else if (tipo === 'fecha' && isNaN(Date.parse(v))) error = 'Fecha inválida.';
+  el.classList.toggle('is-invalid', !!error);
+  let fb = el.nextElementSibling;
+  if (fb && fb.classList.contains('invalid-feedback')) fb.textContent = error;
+  else if (error) {
+    const d = document.createElement('div');
+    d.className = 'invalid-feedback'; d.textContent = error;
+    el.parentNode.insertBefore(d, el.nextSibling);
+  }
+  return !error;
+}
+
+document.querySelectorAll('[name*="apellido"],[name*="nombres"],[name*="tutor"]').forEach(el => {
+  if (!el.name.includes('CI') && el.tagName === 'INPUT') {
+    el.addEventListener('input', () => { el.value = el.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ ]/g, ''); });
+  }
+});
+document.querySelectorAll('[name="CI_tutor"],[name="telefono"]').forEach(el => {
+  el.addEventListener('input', () => { el.value = el.value.replace(/\D/g,''); });
+});
+
+document.getElementById('id_sala_solicitada').addEventListener('change', function() {
+  const hints = {'LACTANTES':'De 0 a 12 meses','INFANTE I':'De 1 a 2 años','INFANTE II A':'De 2 a 3 años','INFANTE II B':'De 3 a 4 años'};
+  document.getElementById('sala-hint').textContent = hints[this.value] || '';
+});
+
+function toggleOcupacion() {
+  const v = document.getElementById('id_ocupacion').value;
+  document.getElementById('seccionItdb').style.display = v === 'ESTUDIANTE_ITDB' ? 'block' : 'none';
+}
+
+function actualizarResumen() {
+  const v = id => document.getElementById(id)?.value || '';
+  document.getElementById('r_ap_nino').textContent = v('id_apellido_paterno_nino') || '—';
+  document.getElementById('r_am_nino').textContent = v('id_apellido_materno_nino') || '(no indicado)';
+  document.getElementById('r_nom_nino').textContent = v('id_nombres_nino') || '—';
+  document.getElementById('r_sexo_nino').textContent = v('id_sexo_nino') === 'M' ? 'Masculino' : v('id_sexo_nino') === 'F' ? 'Femenino' : '—';
+  document.getElementById('r_fn_nino').textContent = v('id_fecha_nacimiento_nino') || '—';
+  const salaMap = {'LACTANTES':'🟢 Lactantes','INFANTE I':'⚪ Infante I','INFANTE II A':'🟠 Infante II A','INFANTE II B':'🔵 Infante II B'};
+  document.getElementById('r_sala').textContent = salaMap[v('id_sala_solicitada')] || '—';
+
+  const fn = v('id_fecha_nacimiento_nino');
+  if (fn) {
+    const d = new Date(fn), hoy = new Date();
+    const meses = (hoy.getFullYear()-d.getFullYear())*12+(hoy.getMonth()-d.getMonth());
+    const anios = Math.floor(meses/12), m = meses%12;
+    document.getElementById('r_edad').textContent = anios > 0 ? `${anios} año(s) y ${m} mes(es)` : `${meses} mes(es)`;
+  }
+
+  const ap = v('id_apellido_paterno_tutor'), am = v('id_apellido_materno_tutor'), nom = v('id_nombres_tutor');
+  document.getElementById('r_tutor_nombre').textContent = [nom,ap,am].filter(Boolean).join(' ') || '—';
+  document.getElementById('r_tutor_ci').textContent = v('id_CI_tutor') || '—';
+
+  const ocupMap = {'ESTUDIANTE_ITDB':'Estudiante ITDB','COMERCIANTE':'Comerciante','AYUDANTE_COSTURA':'Ayudante de Costura',
+    'EMPLEADO_PUBLICO':'Empleado Público','AMA_DE_CASA':'Ama de Casa','INDEPENDIENTE':'Trabajo Independiente',
+    'DOCENTE':'Docente','OTRO':'Otro'};
+  const ocup = v('id_ocupacion');
+  document.getElementById('r_tutor_ocup').textContent = ocupMap[ocup] || '—';
+
+  const carrer = v('id_carrera'), anioS = v('id_anio_semestre');
+  if (ocup === 'ESTUDIANTE_ITDB' && carrer) {
+    document.getElementById('r_carrera_row').style.display = 'flex';
+    document.getElementById('r_tutor_carrera').textContent = [carrer,anioS].filter(Boolean).join(' — ');
+    document.getElementById('r_turno_row').style.display = 'flex';
+    document.getElementById('r_tutor_turno').textContent = v('id_turno') || '—';
+  } else {
+    document.getElementById('r_carrera_row').style.display = 'none';
+    document.getElementById('r_turno_row').style.display = 'none';
+  }
+  document.getElementById('r_tutor_tel').textContent = v('id_telefono') || '—';
+
+  // Foto tutor en resumen
+  const fotoTutor = document.getElementById('tutor-perfil-img').src;
+  if (fotoTutor && fotoTutor !== window.location.href) {
+    document.getElementById('r_foto_tutor').src = fotoTutor;
+    document.getElementById('r_foto_tutor_wrap').style.display = 'block';
+  }
+
+  // Documento adjunto en resumen
+  const docInput = document.getElementById('id_doc_tutor');
+  document.getElementById('r_doc_row').style.display = docInput.files.length > 0 ? 'flex' : 'none';
+}
+
+// Photo preview niño
+document.getElementById('id_foto_nino').addEventListener('change', function() {
+  const file = this.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const prev = document.getElementById('photoPreview');
+      prev.src = e.target.result; prev.style.display = 'block';
+      document.getElementById('photoPlaceholder').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+toggleOcupacion();
+actualizarIndicador();
+</script>
+</body>
+</html>

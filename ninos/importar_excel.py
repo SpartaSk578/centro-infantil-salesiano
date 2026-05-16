@@ -61,7 +61,7 @@ def _turno(raw): return TURNO_MAP.get(_n(raw), None)
 
 def _es_itdb(ocupacion):
     n = _n(ocupacion)
-    return 'ITDB' in n or 'ESTUDIANTE ITDB' in n
+    return 'IDTB' in n or 'ITDB' in n or 'ESTUDIANTE IDTB' in n or 'ESTUDIANTE ITDB' in n
 
 def _fecha(val):
     if isinstance(val, datetime): return val.date()

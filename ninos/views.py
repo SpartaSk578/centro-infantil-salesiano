@@ -111,8 +111,8 @@ def lista_ninos(request):
         )
     if sala_id:
         ninos = ninos.filter(id_grupo_id=sala_id)
-    ninos = ninos.order_by('apellido_paterno', 'apellido_materno', 'nombres')
-    grupos = Grupo.objects.all()
+    ninos = ninos.order_by('id_grupo__nombre_grupo', 'apellido_paterno', 'apellido_materno', 'nombres')
+    grupos = Grupo.objects.all().order_by('nombre_grupo')
     return render(request, 'ninos/lista.html', {'ninos': ninos, 'q': q, 'sala': sala_id, 'grupos': grupos})
 
 @login_required

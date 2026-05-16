@@ -95,7 +95,18 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white">
-                        {% for nino in ninos %}
+                        {% regroup ninos by id_grupo as ninos_por_sala %}
+                        {% for sala_group in ninos_por_sala %}
+                        <tr>
+                            <td colspan="9" class="py-2 px-3" style="background:linear-gradient(90deg,#f0f9ff,#f8fafc);border-top:2px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">
+                                <span class="fw-bold text-uppercase" style="font-size:0.72rem;letter-spacing:1.5px;color:#0369a1;">
+                                    <i class="bi bi-door-closed-fill me-1"></i>
+                                    {% if sala_group.grouper %}{{ sala_group.grouper }}{% else %}Sin Sala Asignada{% endif %}
+                                    <span class="badge bg-primary bg-opacity-10 text-primary ms-2" style="font-size:0.65rem;">{{ sala_group.list|length }} niños</span>
+                                </span>
+                            </td>
+                        </tr>
+                        {% for nino in sala_group.list %}
                         <tr style="transition: all 0.2s;">
                             {% if user.id_rol.nombre_rol != 'Educadora' %}
                         <td class="ps-3">
@@ -117,13 +128,9 @@
                             <td class="d-none d-lg-table-cell">
                                 {% if nino.ci_nino %}
                                 <div class="small fw-bold text-dark">{{ nino.ci_nino }}</div>
+                                {% else %}
+                                <span class="text-muted">—</span>
                                 {% endif %}
-                                {% if nino.direccion %}
-                                <div class="text-muted" style="font-size:.72rem; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{{ nino.direccion }}">
-                                    <i class="bi bi-geo-alt me-1"></i>{{ nino.direccion|truncatechars:30 }}
-                                </div>
-                                {% endif %}
-                                {% if not nino.ci_nino and not nino.direccion %}<span class="text-muted">—</span>{% endif %}
                             </td>
                             <td>
                                 <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 fw-bold" style="font-size: 0.75rem;">
@@ -184,6 +191,7 @@
                                 </div>
                             </td>
                         </tr>
+                        {% endfor %}
                         {% endfor %}
                     </tbody>
                 </table>

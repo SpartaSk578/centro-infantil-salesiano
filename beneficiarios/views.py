@@ -47,7 +47,7 @@ def _data_cell(cell, fill_color='FFFFFF'):
 @login_required
 def lista_beneficiarios(request):
     q = request.GET.get('q', '')
-    beneficiarios = Beneficiario.objects.prefetch_related('ninos', 'tutores')
+    beneficiarios = Beneficiario.objects.prefetch_related('ninos', 'tutores').order_by('apellido_paterno', 'nombres')
     if q:
         beneficiarios = beneficiarios.filter(
             Q(nombres__icontains=q) | Q(apellido_paterno__icontains=q) |
@@ -237,7 +237,7 @@ def exportar_pdf_beneficiarios(request):
 @login_required
 def lista_tutores(request):
     q = request.GET.get('q', '')
-    tutores = TutorPadre.objects.select_related('beneficiario')
+    tutores = TutorPadre.objects.select_related('beneficiario').prefetch_related('ninos').order_by('apellido_paterno', 'nombres')
     if q:
         tutores = tutores.filter(
             Q(nombres__icontains=q) | Q(apellido_paterno__icontains=q) | Q(CI_tutor__icontains=q)

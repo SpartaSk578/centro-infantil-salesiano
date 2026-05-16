@@ -125,9 +125,46 @@
             </ul>
           </div>
 
-          <button type="submit" class="btn btn-primary w-100 fw-bold" id="btnImportar" disabled>
+          <button type="button" class="btn btn-primary w-100 fw-bold" id="btnImportar" disabled onclick="mostrarConfirmacion()">
             <i class="bi bi-cloud-upload me-2"></i>Importar datos
           </button>
+        </form>
+
+        <!-- Modal confirmación -->
+        <div class="modal fade" id="modalConfirmar" tabindex="-1">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius:16px;">
+              <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">
+                  <i class="bi bi-question-circle-fill text-warning me-2"></i>
+                  ¿Desea mover los datos?
+                </h5>
+              </div>
+              <div class="modal-body py-3">
+                <p class="text-muted mb-2" style="font-size:.9rem;">
+                  Estás a punto de importar y registrar los datos del archivo Excel al sistema.
+                </p>
+                <div class="alert alert-warning py-2 px-3 mb-0" style="font-size:.8rem;">
+                  <i class="bi bi-exclamation-triangle me-1"></i>
+                  Esta acción creará los niños y tutores en la base de datos.
+                  Los registros ya existentes <strong>no se duplicarán</strong>.
+                </div>
+              </div>
+              <div class="modal-footer border-0 pt-0 gap-2">
+                <button type="button" class="btn btn-outline-danger fw-bold px-4" data-bs-dismiss="modal" onclick="rechazarImportacion()">
+                  <i class="bi bi-x-circle me-1"></i> Rechazar
+                </button>
+                <button type="button" class="btn btn-success fw-bold px-4" onclick="aceptarImportacion()">
+                  <i class="bi bi-check-circle me-1"></i> Aceptar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- fin modal -->
+        <form id="importFormReal" method="post" enctype="multipart/form-data" style="display:none;">
+          {% csrf_token %}
+          <input type="file" name="archivo_excel" id="hiddenFile">
         </form>
       </div>
     </div>
@@ -354,6 +391,33 @@ dropZone.addEventListener('drop', e => {
     archivoSeleccionado(input);
   }
 });
+
+// ── Modal confirmación ────────────────────────────────────────────────
+function mostrarConfirmacion() {
+  if (!input.files || !input.files[0]) return;
+  const modal = new bootstrap.Modal(document.getElementById('modalConfirmar'));
+  modal.show();
+}
+
+function aceptarImportacion() {
+  // Copiar el archivo al form real y enviar
+  const dt = new DataTransfer();
+  dt.items.add(input.files[0]);
+  document.getElementById('hiddenFile').files = dt.files;
+  bootstrap.Modal.getInstance(document.getElementById('modalConfirmar')).hide();
+  document.getElementById('loadingOverlay').style.display = 'flex';
+  document.getElementById('importFormReal').submit();
+}
+
+function rechazarImportacion() {
+  // Resetear el formulario
+  input.value = '';
+  dropZone.classList.remove('file-ready');
+  dropIcon.className = 'bi bi-file-earmark-spreadsheet';
+  dropText.textContent = 'Arrastra el Excel aquí';
+  dropSub.textContent = 'o haz clic para seleccionar';
+  btnImp.disabled = true;
+}
 
 // ── Loading overlay ────────────────────────────────────────────────────
 document.getElementById('importForm').addEventListener('submit', () => {

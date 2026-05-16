@@ -54,6 +54,7 @@
                     <th class="ps-2 py-3 text-secondary text-uppercase" style="font-size: 0.65rem; font-weight: 800; letter-spacing: 1px;">Identificación</th>
                     <th class="py-3 text-secondary text-uppercase" style="font-size: 0.65rem; font-weight: 800; letter-spacing: 1px;">Tutor / Padre</th>
                     <th class="py-3 text-secondary text-uppercase" style="font-size: 0.65rem; font-weight: 800; letter-spacing: 1px;">Contacto</th>
+                    <th class="py-3 text-secondary text-uppercase" style="font-size: 0.65rem; font-weight: 800; letter-spacing: 1px;">Dirección</th>
                     <th class="py-3 text-secondary text-uppercase text-center" style="font-size: 0.65rem; font-weight: 800; letter-spacing: 1px;">Niños</th>
                     <th class="py-3 text-secondary text-uppercase" style="font-size: 0.65rem; font-weight: 800; letter-spacing: 1px;">Registrado por</th>
                     <th class="pe-4 py-3 text-secondary text-uppercase text-end" style="font-size: 0.65rem; font-weight: 800; letter-spacing: 1px;">Gestión</th>
@@ -93,6 +94,11 @@
                                 <i class="bi bi-telephone-fill" style="font-size:0.75rem;"></i>
                             </div>
                             <span class="text-dark fw-semibold" style="font-size:0.85rem;">{{ t.contacto|default:"Sin número" }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="text-muted small" style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="{{ t.direccion }}">
+                            <i class="bi bi-geo-alt-fill me-1 opacity-50"></i>{{ t.direccion|default:"No registrada" }}
                         </div>
                     </td>
                     <td class="text-center">

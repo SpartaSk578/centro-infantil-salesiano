@@ -233,6 +233,7 @@ def procesar_excel(filepath, usuario):
                     noms,ap_p,ap_m = _partes(nombre_tutor or '')
                     ci_k = ci_tutor if (ci_tutor and len(ci_tutor)>3) else _ci_temp(noms,ap_p,tel)
                     ocup_esp = _n(ocup_r)
+                    from django.utils import timezone
                     tutor_obj = TutorPadre(
                         CI_tutor=ci_k,
                         nombres=noms or 'SIN NOMBRE',
@@ -241,6 +242,7 @@ def procesar_excel(filepath, usuario):
                         ocupacion='OTRO',
                         ocupacion_especifica=ocup_esp[:100],
                         contacto=tel,
+                        fecha_registro=timezone.now().date(),
                         registrado_por=usuario,
                     )
                     tutor_obj.save()

@@ -64,7 +64,7 @@ def registrar_asistencia_masiva(request):
     elif grupo_id:
         ninos = ninos.filter(id_grupo_id=grupo_id)
 
-    if request.method == 'POST' and 'guardar' in request.POST:
+    if request.method == 'POST' and 'guardar' in request.POST and 'filtrar' not in request.POST:
         for nino in ninos:
             estado = request.POST.get(f'estado_{nino.id}', 'falto')
             obs = request.POST.get(f'obs_{nino.id}', '')

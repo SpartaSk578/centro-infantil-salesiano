@@ -30,14 +30,19 @@
                 <input type="date" name="fecha" value="{{ fecha }}" class="form-control" required>
             </div>
             {% if not grupo_educadora %}
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label small fw-bold text-secondary mb-1">GRUPO</label>
-                <select name="grupo_id" class="form-select" onchange="this.form.submit()">
+                <select name="grupo_id" class="form-select">
                     <option value="">Todos los grupos</option>
                     {% for g in grupos %}
                     <option value="{{ g.pk }}" {% if grupo_id == g.pk|stringformat:"s" %}selected{% endif %}>{{ g.nombre_grupo }}</option>
                     {% endfor %}
                 </select>
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+                <button type="submit" name="filtrar" value="1" class="btn btn-outline-dark btn-sm w-100 fw-bold">
+                    <i class="bi bi-funnel"></i>
+                </button>
             </div>
             {% else %}
             <div class="col-md-4">

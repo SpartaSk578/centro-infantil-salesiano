@@ -67,9 +67,9 @@ def crear_beneficiario(request):
         b = form.save(commit=False)
         b.registrado_por = request.user
         b.save()
-        messages.success(request, 'Padre IDS registrado correctamente.')
+        messages.success(request, 'Padre/IDTB registrado correctamente.')
         return redirect('beneficiarios:lista_beneficiarios')
-    return render(request, 'beneficiarios/form.html', {'form': form, 'titulo': 'Nuevo Padre IDS'})
+    return render(request, 'beneficiarios/form.html', {'form': form, 'titulo': 'Nuevo Padre/IDTB'})
 
 @login_required
 def editar_beneficiario(request, ci):
@@ -80,9 +80,9 @@ def editar_beneficiario(request, ci):
     form = BeneficiarioForm(request.POST or None, request.FILES or None, instance=b)
     if request.method == 'POST' and form.is_valid():
         form.save()
-        messages.success(request, 'Padre IDS actualizado.')
+        messages.success(request, 'Padre/IDTB actualizado.')
         return redirect('beneficiarios:lista_beneficiarios')
-    return render(request, 'beneficiarios/form.html', {'form': form, 'titulo': 'Editar Padre IDS', 'objeto': b})
+    return render(request, 'beneficiarios/form.html', {'form': form, 'titulo': 'Editar Padre/IDTB', 'objeto': b})
 
 @login_required
 def eliminar_beneficiario(request, ci):
@@ -94,7 +94,7 @@ def eliminar_beneficiario(request, ci):
     if request.method == 'POST':
         try:
             b.delete()
-            messages.success(request, 'Padre IDS eliminado.')
+            messages.success(request, 'Padre/IDTB eliminado.')
         except ProtectedError:
             messages.error(request, 'No se puede eliminar: tiene niños registrados.')
         return redirect('beneficiarios:lista_beneficiarios')

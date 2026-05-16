@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 
-{% block page_title %}Padres/IDS{% endblock %}
+{% block page_title %}Padres/IDTB{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
     <div>
         <h4 class="fw-bold mb-0 text-dark">
-            <i class="bi bi-people-fill text-primary me-2"></i>Gestión de Padres/IDS
+            <i class="bi bi-people-fill text-primary me-2"></i>Gestión de Padres/IDTB
         </h4>
-        <p class="text-muted small mb-0">Padres estudiantes del instituto registrados.</p>
+        <p class="text-muted small mb-0">Padres estudiantes del IDTB registrados.</p>
     </div>
     <div class="d-flex gap-2 flex-wrap align-items-center">
         <form class="d-flex" method="get">
@@ -20,7 +20,7 @@
         </form>
         {% if user.id_rol.nombre_rol != 'Educadora' %}
         <a href="{% url 'beneficiarios:crear_beneficiario' %}" class="btn btn-primary rounded-3 fw-bold shadow-sm px-4">
-            <i class="bi bi-plus-lg me-1"></i> Nuevo Padre IDS
+            <i class="bi bi-plus-lg me-1"></i> Nuevo Padre/IDTB
         </a>
         {% endif %}
     </div>

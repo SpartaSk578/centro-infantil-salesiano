@@ -6,7 +6,7 @@ solo_letras = RegexValidator(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$', "Solo letr
 solo_numeros = RegexValidator(r'^\d+$', "Solo números.")
 
 # Choices para Padres/IDS (Beneficiarios)
-OCUPACION_CHOICES_BENEFICIARIO = [('ESTUDIANTE_ITDB', 'Estudiante ITDB')]
+OCUPACION_CHOICES_BENEFICIARIO = [('ESTUDIANTE_IDTB', 'Estudiante IDTB')]
 
 CARRERA_CHOICES = [
     ('CONTADURIA_GENERAL', 'Contaduría General'),
@@ -38,7 +38,7 @@ OCUPACION_CHOICES_TUTOR = [
 ]
 
 # Mantener para compatibilidad
-OCUPACION_CHOICES = [('ESTUDIANTE_ITDB', 'Estudiante ITDB'), ('OTRO', 'Otro')]
+OCUPACION_CHOICES = [('ESTUDIANTE_IDTB', 'Estudiante IDTB'), ('OTRO', 'Otro')]
 TURNO_CHOICES = [('MANANA', 'Mañana'), ('TARDE', 'Tarde'), ('NOCHE', 'Noche')]
 
 class Beneficiario(models.Model):
@@ -47,7 +47,7 @@ class Beneficiario(models.Model):
     apellido_paterno = models.CharField(max_length=50, validators=[solo_letras])
     apellido_materno = models.CharField(max_length=50, validators=[solo_letras], blank=True)
     apellidos = models.CharField(max_length=100, blank=True, editable=False)
-    ocupacion = models.CharField(max_length=30, choices=OCUPACION_CHOICES_BENEFICIARIO, default='ESTUDIANTE_ITDB')
+    ocupacion = models.CharField(max_length=30, choices=OCUPACION_CHOICES_BENEFICIARIO, default='ESTUDIANTE_IDTB')
     ocupacion_especifica = models.CharField(max_length=100, blank=True, null=True)
     carrera = models.CharField(max_length=100, blank=True, null=True)
     anio_semestre = models.CharField(max_length=50, blank=True, null=True)

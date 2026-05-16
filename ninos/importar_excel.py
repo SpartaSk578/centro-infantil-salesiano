@@ -1,342 +1,291 @@
 """
-Importación del Excel OFPROBOL 2025/2026 al sistema.
-Columnas (fila 4):
+Importación Excel OFPROBOL 2025/2026
+Columnas (datos desde fila 5):
  1=Nº  2=AP_PAT  3=AP_MAT  4=NOMBRES  5=SEXO  6=FEC_NAC  7=AÑO  8=MESES
  9=CI_NINO  10=DIRECCIÓN  11=PESO  12=TALLA  13=VACUNAS  14=SALA
- 15=NOMBRE_TUTOR  16=CI_TUTOR  17=NRO_REGISTRO_ITDB  18=OCUPACION
- 19=CARRERA  20=AÑO_SEM  21=TURNO  22=EDAD  23=CELULAR  24=(vacío)
+ 15=NOMBRE_TUTOR  16=CI_TUTOR  17=NRO_ITDB(vacío)  18=OCUPACION  19=CARRERA
+ 20=AÑO_SEM  21=TURNO  22=EDAD  23=CELULAR
 """
-
-import openpyxl
-import re
+import openpyxl, re
 from datetime import date, datetime
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-
 from beneficiarios.models import Beneficiario, TutorPadre, CARRERA_CHOICES, TURNO_CHOICES
 from ninos.models import Nino
 
-
-# ─── MAPEOS ───────────────────────────────────────────────────────────────────
 SALA_MAP = {
-    'LACTANTES':    'LACTANTES',
-    'LACTANTE':     'LACTANTES',
-    'INFANTE I':    'INFANTE I',
-    'INFANTE II A': 'INFANTE II A',
-    'INFANTE IIA':  'INFANTE II A',
-    'INFANTE II B': 'INFANTE II B',
-    'INFANTE IIB':  'INFANTE II B',
-    'INFANTE II':   'INFANTE II A',
+    'LACTANTES':'LACTANTES','LACTANTE':'LACTANTES',
+    'INFANTE I':'INFANTE I',
+    'INFANTE II A':'INFANTE II A','INFANTE IIA':'INFANTE II A',
+    'INFANTE II B':'INFANTE II B','INFANTE IIB':'INFANTE II B',
+    'INFANTE II':'INFANTE II A',
 }
-
 CARRERA_MAP = {
-    'CONTADURIA GENERAL':         'CONTADURIA_GENERAL',
-    'CONTADURÍA GENERAL':         'CONTADURIA_GENERAL',
-    'ADMINISTRACION DE EMPRESAS': 'ADMINISTRACION_EMPRESAS',
-    'ADMINISTRACIÓN DE EMPRESAS': 'ADMINISTRACION_EMPRESAS',
-    'SISTEMAS COMPUTACIONALES':   'SISTEMAS_COMPUTACIONALES',
-    'EDUCACION':                  'EDUCACION',
-    'EDUCACIÓN':                  'EDUCACION',
-    'ENFERMERIA':                 'ENFERMERIA',
-    'ENFERMERÍA':                 'ENFERMERIA',
-    'INGENIERIA CIVIL':           'INGENIERIA_CIVIL',
-    'INGENIERÍA CIVIL':           'INGENIERIA_CIVIL',
-    'INGENIERIA INDUSTRIAL':      'INGENIERIA_INDUSTRIAL',
-    'INGENIERÍA INDUSTRIAL':      'INGENIERIA_INDUSTRIAL',
-    'PSICOLOGIA':                 'PSICOLOGIA',
-    'PSICOLOGÍA':                 'PSICOLOGIA',
-    'DERECHO':                    'DERECHO',
-    'INGLES':                     'INGLES',
-    'INGLÉS':                     'INGLES',
+    'CONTADURIA GENERAL':'CONTADURIA_GENERAL','CONTADURÍA GENERAL':'CONTADURIA_GENERAL',
+    'CONTADURA GENERAL':'CONTADURIA_GENERAL','CONTADIRIA GENERAL':'CONTADURIA_GENERAL',
+    'CONTADURIA GENRAL':'CONTADURIA_GENERAL',
+    'ADMINISTRACION DE EMPRESAS':'ADMINISTRACION_EMPRESAS',
+    'SISTEMAS COMPUTACIONALES':'SISTEMAS_COMPUTACIONALES',
+    'SISTEMAS INFORMATICOS':'SISTEMAS_COMPUTACIONALES',
+    'EDUCACION':'EDUCACION','ENFERMERIA':'ENFERMERIA',
+    'INGENIERIA CIVIL':'INGENIERIA_CIVIL',
+    'INGENIERIA INDUSTRIAL':'INGENIERIA_INDUSTRIAL',
+    'ELECTRICIDAD INDUSTRIAL':'INGENIERIA_INDUSTRIAL',
+    'PSICOLOGIA':'PSICOLOGIA','DERECHO':'DERECHO',
+    'INGLES':'INGLES','SECRETARIADO':'SISTEMAS_COMPUTACIONALES',
+    'SECRETARIADO EJECUTIVO':'SISTEMAS_COMPUTACIONALES',
+    'ARTES GRAFICAS':'SISTEMAS_COMPUTACIONALES',
+    'DIRECCIÓN ACADEMICA ITDB':'OTRO',
 }
+TURNO_MAP = {'MAÑANA':'MANANA','MANANA':'MANANA','TARDE':'TARDE','NOCHE':'NOCHE'}
+CARRERA_KEYS = {v for v,_ in CARRERA_CHOICES}
 
-TURNO_MAP = {
-    'MAÑANA': 'MANANA', 'MANANA': 'MANANA', 'TARDE': 'TARDE', 'NOCHE': 'NOCHE',
-}
+def _l(v): return '' if v is None else str(v).strip()
+def _n(v): return _l(v).upper()
 
-CARRERA_CHOICES_KEYS = {v for v, _ in CARRERA_CHOICES}
-
-
-# ─── HELPERS ──────────────────────────────────────────────────────────────────
-def _limpiar(val):
-    if val is None: return ''
-    return str(val).strip()
-
-def _normalizar(val):
-    return _limpiar(val).upper()
-
-def _mapear_sala(raw):
-    n = _normalizar(raw)
-    for k, v in SALA_MAP.items():
-        if k in n:
-            return v
+def _sala(raw):
+    n = _n(raw)
+    for k,v in SALA_MAP.items():
+        if k in n: return v
     return None
 
-def _mapear_turno(raw):
-    return TURNO_MAP.get(_normalizar(raw), None)
-
-def _mapear_carrera(raw):
-    n = _normalizar(raw)
-    if n in CARRERA_MAP:
-        return CARRERA_MAP[n]
-    for k, v in CARRERA_MAP.items():
-        if k in n or n in k:
-            return v
+def _carrera(raw):
+    n = _n(raw)
+    if n in CARRERA_MAP: return CARRERA_MAP[n]
+    for k,v in CARRERA_MAP.items():
+        if k in n: return v
     return 'OTRO'
 
-def _es_itdb(ocupacion_raw, nro_registro_itdb):
-    """Determina si el tutor es estudiante ITDB."""
-    n = _normalizar(ocupacion_raw)
-    if 'ITDB' in n or 'ESTUDIANTE ITDB' in n:
-        return True
-    if nro_registro_itdb and str(nro_registro_itdb).strip() not in ('', 'None'):
-        return True
-    return False
+def _turno(raw): return TURNO_MAP.get(_n(raw), None)
 
-def _parse_fecha(val):
+def _es_itdb(ocupacion):
+    n = _n(ocupacion)
+    return 'ITDB' in n or 'ESTUDIANTE ITDB' in n
+
+def _fecha(val):
     if isinstance(val, datetime): return val.date()
     if isinstance(val, date): return val
-    s = _limpiar(val)
-    for fmt in ('%d/%m/%Y', '%Y-%m-%d', '%d-%m-%Y', '%d/%m/%y'):
+    s = _l(val)
+    for fmt in ('%d/%m/%Y','%Y-%m-%d','%d-%m-%Y','%d/%m/%y'):
         try: return datetime.strptime(s, fmt).date()
         except: pass
     m = re.search(r'(\d{1,2})[/\-](\d{1,2})[/\-](\d{2,4})', s)
     if m:
         try:
-            d, mo, y = int(m.group(1)), int(m.group(2)), int(m.group(3))
-            if y < 100: y += 2000
-            return date(y, mo, d)
+            d,mo,y = int(m.group(1)),int(m.group(2)),int(m.group(3))
+            if y<100: y+=2000
+            return date(y,mo,d)
         except: pass
     return None
 
-def _parse_contacto(val):
+def _tel(val):
     if val is None: return ''
-    s = re.sub(r'\D', '', str(val))
-    return s[:15]
+    return re.sub(r'\D','',str(val))[:15]
 
-def _parse_peso(val):
-    """Extrae peso en kg como float."""
+def _peso(val):
     if val is None: return None
     s = str(val).strip().upper()
-    if s in ('', 'FALTA', 'S/D', 'N/D', '-'): return None
-    # "9,9 KILOS" -> 9.9
-    m = re.search(r'(\d+)[,.](\d+)', s)
-    if m: return float(f"{m.group(1)}.{m.group(2)}")
-    m = re.search(r'(\d+)', s)
-    if m: return float(m.group(1))
+    if s in ('','FALTA','S/D','N/D','-','FALTAAAAA'): return None
+    s2 = re.sub(r'[KILOGRAMOSKG ]','',s).replace(',','.')
+    m = re.search(r'(\d+\.?\d*)', s2)
+    if m:
+        try: return float(m.group(1))
+        except: pass
     return None
 
-def _parse_talla(val):
-    """Extrae talla en cm como float."""
+def _talla(val):
     if val is None: return None
     s = str(val).strip().upper()
-    if s in ('', 'FALTA', 'S/D', 'N/D', '-'): return None
-    # "73cm" o "79,5cm" -> 73.0 / 79.5
-    s = s.replace(',', '.')
-    m = re.search(r'(\d+\.?\d*)', s)
-    if m: return float(m.group(1))
+    if s in ('','FALTA','S/D','N/D','-','FALTAAAAA'): return None
+    s2 = s.replace(',','.').replace('CM','').strip()
+    m = re.search(r'(\d+\.?\d*)', s2)
+    if m:
+        try: return float(m.group(1))
+        except: pass
     return None
 
-def _parse_vacunas(val):
-    s = _normalizar(val)
-    return s in ('SI', 'SÍ', 'S', 'YES', 'Y', '1', 'TRUE', 'COMPLETAS')
+def _vacunas(val):
+    return _n(val) in ('SI','SÍ','S','YES','Y','1','TRUE','COMPLETAS')
 
-def _extraer_partes_nombre(nombre_completo):
-    partes = _normalizar(nombre_completo).split()
-    if not partes: return ('SIN NOMBRE', '', '')
-    if partes[0] in ('TUTORA', 'TUTOR', 'DR', 'DRA', 'LIC'): partes = partes[1:]
-    if not partes: return ('SIN NOMBRE', '', '')
-    if len(partes) == 1: return (partes[0], '', '')
-    if len(partes) == 2: return (partes[0], partes[1], '')
-    if len(partes) >= 3:
-        ap_mat = partes[-1]
-        ap_pat = partes[-2]
-        nombres = ' '.join(partes[:-2])
-        return (nombres, ap_pat, ap_mat)
-    return (partes[0], '', '')
+def _partes(nombre):
+    partes = _n(nombre).split()
+    if not partes: return ('SIN NOMBRE','','')
+    if partes[0] in ('TUTORA','TUTOR','DR','DRA','LIC'): partes=partes[1:]
+    if not partes: return ('SIN NOMBRE','','')
+    if len(partes)==1: return (partes[0],'','')
+    if len(partes)==2: return (partes[0],partes[1],'')
+    return (' '.join(partes[:-2]), partes[-2], partes[-1])
 
-def _generar_ci_temporal(nombres, ap_pat, contacto):
-    iniciales = ''
-    for p in [ap_pat, nombres]:
-        if p: iniciales += p[0]
-    tel = contacto[:6] if contacto else '000000'
-    return f"IMP-{iniciales}{tel}".upper()[:15]
+def _ci_temp(noms, ap_pat, tel):
+    ini = ''
+    for p in [ap_pat, noms]:
+        if p: ini += p[0]
+    t = tel[:6] if tel else '000000'
+    return f"IMP-{ini}{t}".upper()[:15]
 
-
-# ─── PROCESAMIENTO PRINCIPAL ──────────────────────────────────────────────────
 def procesar_excel(filepath, usuario):
     try:
         wb = openpyxl.load_workbook(filepath)
     except Exception as e:
-        return None, None, f"No se pudo abrir el archivo: {e}"
+        return None, None, f"Error al abrir: {e}"
 
     ws = wb.active
     resultados = []
-    stats = {'creados': 0, 'existentes': 0, 'errores': 0, 'tutores_creados': 0}
+    stats = {'creados':0,'existentes':0,'errores':0,'tutores_creados':0}
 
-    # Detectar fila de inicio de datos (buscar fila con "APELLIDO PATERNO" o primera fila con datos reales)
-    fila_inicio = 5  # default
-    for row_idx in range(1, 10):
-        val = ws.cell(row_idx, 2).value
-        if val and 'APELLIDO' in str(val).upper():
-            fila_inicio = row_idx + 1
+    # Auto-detect data start row
+    fila_inicio = 5
+    for ri in range(1, 8):
+        v = ws.cell(ri, 4).value
+        if v and str(v).strip() and 'NOMBRE' not in str(v).upper():
+            fila_inicio = ri
             break
 
     for row_idx, row in enumerate(ws.iter_rows(min_row=fila_inicio, values_only=True), start=fila_inicio):
-        if all(v is None for v in row):
-            continue
+        if all(v is None for v in row): continue
+        row_list = list(row) + [None]*5
+        (nro, ap_pat_n, ap_mat_n, nombres_n, sexo_r,
+         fec_nac_r, anio_r, meses_r,
+         ci_nino_r, dir_r, peso_r, talla_r, vac_r, sala_r,
+         nombre_tutor, ci_tutor_r, nro_itdb_r, ocup_r,
+         carrera_r, anio_sem_r, turno_r, edad_r, cel_r) = row_list[:23]
 
-        # Desempaquetar las 24 columnas de forma segura
-        row_list = list(row)
-        # Rellenar si hay menos columnas
-        while len(row_list) < 24:
-            row_list.append(None)
+        if not nombres_n and not ap_pat_n: continue
 
-        (nro, ap_pat_nino, ap_mat_nino, nombres_nino, sexo_raw,
-         fec_nac_raw, anio_raw, meses_raw,
-         ci_nino_raw, direccion_raw, peso_raw, talla_raw, vacunas_raw, sala_raw,
-         nombre_tutor, ci_tutor_raw, nro_registro_itdb, ocupacion_raw,
-         carrera_raw, anio_sem, turno_raw, edad_raw, celular_raw, _) = row_list[:24]
-
-        # Saltar si no hay nombre de niño
-        if not nombres_nino and not ap_pat_nino:
-            continue
-
-        fila_info = {
+        fi = {
             'fila': row_idx,
-            'nino': f"{_normalizar(ap_pat_nino)} {_normalizar(ap_mat_nino)} {_normalizar(nombres_nino)}".strip(),
-            'tutor': _normalizar(nombre_tutor),
-            'sala': _normalizar(sala_raw),
-            'estado': '',
-            'mensaje': '',
-            'es_itdb': False,
-            'advertencias': [],
+            'nino': f"{_n(ap_pat_n)} {_n(ap_mat_n)} {_n(nombres_n)}".strip(),
+            'tutor': _n(nombre_tutor),
+            'sala': _n(sala_r),
+            'estado': '', 'mensaje': '', 'es_itdb': False, 'advertencias': [],
         }
 
         try:
-            if not nombres_nino:
-                raise ValueError("Falta el nombre del niño")
+            if not nombres_n: raise ValueError("Falta nombre")
 
-            fecha_nac = _parse_fecha(fec_nac_raw)
-            if fecha_nac is None:
-                fila_info['advertencias'].append(f"Fecha no reconocida ({fec_nac_raw!r}), se usará hoy")
+            fecha_nac = _fecha(fec_nac_r)
+            sala = _sala(sala_r)
+            sexo = _n(sexo_r)
+            if sexo not in ('M','F'): sexo = 'M'
 
-            sala = _mapear_sala(sala_raw)
-            if not sala:
-                fila_info['advertencias'].append(f"Sala no reconocida ({sala_raw!r})")
+            peso = _peso(peso_r)
+            talla = _talla(talla_r)
+            vacunas = _vacunas(vac_r)
+            direccion = _l(dir_r)
+            ci_nino = _l(ci_nino_r)
+            if ci_nino.upper() in ('FALTAAAAA','FALTA','S/D','','-'): ci_nino = ''
 
-            sexo = _normalizar(sexo_raw)
-            if sexo not in ('M', 'F'):
-                sexo = 'M'
+            tel = _tel(cel_r)
+            ci_tutor = _l(ci_tutor_r)
+            if ci_tutor.upper() in ('FALTAAAAA','FALTA','','-'): ci_tutor = ''
 
-            # Datos nuevos del niño
-            peso = _parse_peso(peso_raw)
-            talla = _parse_talla(talla_raw)
-            vacunas = _parse_vacunas(vacunas_raw)
-            direccion = _limpiar(direccion_raw)
-            ci_nino = _limpiar(ci_nino_raw)
-
-            # Procesar tutor
-            contacto = _parse_contacto(celular_raw)
-            ci_tutor = _limpiar(ci_tutor_raw)
-            nro_itdb = _limpiar(nro_registro_itdb)
-            es_itdb = _es_itdb(ocupacion_raw, nro_registro_itdb)
-            fila_info['es_itdb'] = es_itdb
+            es_itdb = _es_itdb(ocup_r)
+            fi['es_itdb'] = es_itdb
 
             tutor_obj = None
-            beneficiario_obj = None
+            benef_obj = None
 
             if es_itdb:
-                carrera_key = _mapear_carrera(carrera_raw)
-                turno_key = _mapear_turno(turno_raw)
-                anio_sem_str = _normalizar(anio_sem)
-                ocupacion_extra = _normalizar(ocupacion_raw)
+                carrera_k = _carrera(carrera_r)
+                turno_k = _turno(turno_r)
+                ocup_esp = _n(ocup_r)
 
-                # Buscar por CI real del tutor, luego por celular, luego por CI temporal
-                b_existente = None
+                b = None
                 if ci_tutor and len(ci_tutor) > 3:
-                    b_existente = Beneficiario.objects.filter(CI_beneficiario=ci_tutor).first()
-                if not b_existente and contacto:
-                    b_existente = Beneficiario.objects.filter(contacto=contacto).first()
+                    b = Beneficiario.objects.filter(CI_beneficiario=ci_tutor).first()
+                if not b and tel:
+                    b = Beneficiario.objects.filter(contacto=tel).first()
 
-                if b_existente:
-                    beneficiario_obj = b_existente
-                    fila_info['advertencias'].append(f"Tutor IDS ya existía: {b_existente.get_full_name()}")
+                if b:
+                    benef_obj = b
+                    fi['advertencias'].append(f"Padre/IDTB ya existía: {b.get_full_name()}")
                 else:
-                    noms_t, ap_p_t, ap_m_t = _extraer_partes_nombre(nombre_tutor or '')
-                    # Usar CI real si está disponible, sino generar temporal
-                    ci_key = ci_tutor if (ci_tutor and len(ci_tutor) > 3) else _generar_ci_temporal(noms_t, ap_p_t, contacto)
-                    beneficiario_obj = Beneficiario(
-                        CI_beneficiario=ci_key,
-                        nombres=noms_t or 'SIN NOMBRE',
-                        apellido_paterno=ap_p_t or 'S/N',
-                        apellido_materno=ap_m_t,
+                    noms,ap_p,ap_m = _partes(nombre_tutor or '')
+                    ci_k = ci_tutor if (ci_tutor and len(ci_tutor)>3) else _ci_temp(noms,ap_p,tel)
+                    benef_obj = Beneficiario(
+                        CI_beneficiario=ci_k,
+                        nombres=noms or 'SIN NOMBRE',
+                        apellido_paterno=ap_p or 'S/N',
+                        apellido_materno=ap_m,
                         ocupacion='ESTUDIANTE_ITDB',
-                        ocupacion_especifica=ocupacion_extra[:100] if ocupacion_extra else '',
-                        carrera=carrera_key,
-                        anio_semestre=anio_sem_str[:50] if anio_sem_str else '',
-                        turno=turno_key,
-                        contacto=contacto,
+                        ocupacion_especifica=ocup_esp[:100],
+                        carrera=carrera_k,
+                        anio_semestre=_n(anio_sem_r)[:50] if anio_sem_r else '',
+                        turno=turno_k,
+                        contacto=tel,
                         registrado_por=usuario,
                     )
-                    beneficiario_obj.save()
+                    benef_obj.save()
                     stats['tutores_creados'] += 1
-                    fila_info['advertencias'].append(f"Tutor IDS creado: CI={ci_key}")
-
+                    fi['advertencias'].append(f"Padre/IDTB creado: CI={ci_k}")
             else:
-                t_existente = None
+                t = None
                 if ci_tutor and len(ci_tutor) > 3:
-                    t_existente = TutorPadre.objects.filter(CI_tutor=ci_tutor).first()
-                if not t_existente and contacto:
-                    t_existente = TutorPadre.objects.filter(contacto=contacto).first()
+                    t = TutorPadre.objects.filter(CI_tutor=ci_tutor).first()
+                if not t and tel:
+                    t = TutorPadre.objects.filter(contacto=tel).first()
 
-                if t_existente:
-                    tutor_obj = t_existente
-                    fila_info['advertencias'].append(f"Tutor externo ya existía: {t_existente.get_full_name()}")
+                if t:
+                    tutor_obj = t
+                    fi['advertencias'].append(f"Padre/Externo ya existía: {t.get_full_name()}")
                 else:
-                    noms_t, ap_p_t, ap_m_t = _extraer_partes_nombre(nombre_tutor or '')
-                    ci_key = ci_tutor if (ci_tutor and len(ci_tutor) > 3) else _generar_ci_temporal(noms_t, ap_p_t, contacto)
-                    ocupacion_extra = _normalizar(ocupacion_raw)
+                    noms,ap_p,ap_m = _partes(nombre_tutor or '')
+                    ci_k = ci_tutor if (ci_tutor and len(ci_tutor)>3) else _ci_temp(noms,ap_p,tel)
+                    ocup_esp = _n(ocup_r)
                     tutor_obj = TutorPadre(
-                        CI_tutor=ci_key,
-                        nombres=noms_t or 'SIN NOMBRE',
-                        apellido_paterno=ap_p_t or 'S/N',
-                        apellido_materno=ap_m_t,
+                        CI_tutor=ci_k,
+                        nombres=noms or 'SIN NOMBRE',
+                        apellido_paterno=ap_p or 'S/N',
+                        apellido_materno=ap_m,
                         ocupacion='OTRO',
-                        ocupacion_especifica=ocupacion_extra[:100] if ocupacion_extra else '',
-                        contacto=contacto,
+                        ocupacion_especifica=ocup_esp[:100],
+                        contacto=tel,
                         registrado_por=usuario,
                     )
                     tutor_obj.save()
                     stats['tutores_creados'] += 1
-                    fila_info['advertencias'].append(f"Tutor externo creado: CI={ci_key}")
+                    fi['advertencias'].append(f"Padre/Externo creado: CI={ci_k}")
 
-            # Verificar duplicados
-            nino_existe = Nino.objects.filter(
-                nombres__iexact=_normalizar(nombres_nino),
-                apellido_paterno__iexact=_normalizar(ap_pat_nino or ''),
+            # Buscar grupo - match flexible
+            from grupos.models import Grupo
+            grupo_obj = None
+            if sala:
+                # Primero buscar match exacto
+                for g in Grupo.objects.all():
+                    if _n(sala) == _n(g.nombre_grupo):
+                        grupo_obj = g
+                        break
+                # Si no hay exacto, buscar por contenido clave
+                if not grupo_obj:
+                    sala_n = _n(sala)
+                    for g in Grupo.objects.all():
+                        g_n = _n(g.nombre_grupo)
+                        # LACTANTE matches LACTANTES and viceversa
+                        if ('LACTANTE' in sala_n and 'LACTANTE' in g_n):
+                            grupo_obj = g; break
+                        elif ('INFANTE II A' in sala_n or 'INFANTE IIA' in sala_n) and ('INFANTE II A' in g_n or 'INFANTE IIA' in g_n):
+                            grupo_obj = g; break
+                        elif ('INFANTE II B' in sala_n or 'INFANTE IIB' in sala_n) and ('INFANTE II B' in g_n or 'INFANTE IIB' in g_n):
+                            grupo_obj = g; break
+                        elif 'INFANTE I' in sala_n and not 'II' in sala_n and 'INFANTE I' in g_n and not 'II' in g_n:
+                            grupo_obj = g; break
+
+            # Verificar duplicado
+            existe = Nino.objects.filter(
+                nombres__iexact=_n(nombres_n),
+                apellido_paterno__iexact=_n(ap_pat_n or ''),
             ).first()
 
-            if nino_existe:
-                fila_info['estado'] = 'existente'
-                fila_info['mensaje'] = f"Ya registrado (ID {nino_existe.pk})"
+            if existe:
+                fi['estado'] = 'existente'
+                fi['mensaje'] = f"Ya registrado (ID {existe.pk})"
                 stats['existentes'] += 1
             else:
-                # Buscar grupo por sala
-                from grupos.models import Grupo
-                grupo_obj = None
-                if sala:
-                    for g in Grupo.objects.all():
-                        if _normalizar(sala) == _normalizar(g.nombre_grupo):
-                            grupo_obj = g
-                            break
-
                 nino = Nino(
-                    nombres=_normalizar(nombres_nino),
-                    apellido_paterno=_normalizar(ap_pat_nino or ''),
-                    apellido_materno=_normalizar(ap_mat_nino or ''),
+                    nombres=_n(nombres_n),
+                    apellido_paterno=_n(ap_pat_n or ''),
+                    apellido_materno=_n(ap_mat_n or ''),
                     ci_nino=ci_nino or None,
                     sexo=sexo,
                     fecha_nacimiento=fecha_nac or date.today(),
@@ -347,54 +296,46 @@ def procesar_excel(filepath, usuario):
                     peso_kg=peso,
                     talla_cm=talla,
                     vacunas_al_dia=vacunas,
-                    CI_beneficiario=beneficiario_obj,
+                    CI_beneficiario=benef_obj,
                     CI_tutor_padre=tutor_obj,
                     registrado_por=usuario,
                 )
                 nino.save()
-                fila_info['estado'] = 'creado'
-                fila_info['mensaje'] = f"Creado exitosamente (ID {nino.pk})"
+                fi['estado'] = 'creado'
+                fi['mensaje'] = f"Creado OK (ID {nino.pk})"
                 stats['creados'] += 1
 
         except Exception as e:
-            fila_info['estado'] = 'error'
-            fila_info['mensaje'] = str(e)
+            fi['estado'] = 'error'
+            fi['mensaje'] = str(e)
             stats['errores'] += 1
 
-        resultados.append(fila_info)
+        resultados.append(fi)
 
     return resultados, stats, None
 
-
 @login_required
 def importar_excel_ninos(request):
-    contexto = {'titulo': 'Importar Excel OFPROBOL'}
-
+    ctx = {'titulo': 'Importar Excel OFPROBOL'}
     if request.method == 'POST':
         archivo = request.FILES.get('archivo_excel')
         if not archivo:
             messages.error(request, 'Selecciona un archivo Excel (.xlsx)')
-            return render(request, 'ninos/importar_excel.html', contexto)
+            return render(request, 'ninos/importar_excel.html', ctx)
         if not archivo.name.endswith('.xlsx'):
             messages.error(request, 'Solo se aceptan archivos .xlsx')
-            return render(request, 'ninos/importar_excel.html', contexto)
-
+            return render(request, 'ninos/importar_excel.html', ctx)
         import tempfile, os
         with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as tmp:
-            for chunk in archivo.chunks():
-                tmp.write(chunk)
+            for chunk in archivo.chunks(): tmp.write(chunk)
             tmp_path = tmp.name
-
         try:
             resultados, stats, error = procesar_excel(tmp_path, request.user)
         finally:
             os.unlink(tmp_path)
-
         if error:
             messages.error(request, error)
-            return render(request, 'ninos/importar_excel.html', contexto)
-
-        contexto.update({'resultados': resultados, 'stats': stats, 'procesado': True})
-        return render(request, 'ninos/importar_excel.html', contexto)
-
-    return render(request, 'ninos/importar_excel.html', contexto)
+            return render(request, 'ninos/importar_excel.html', ctx)
+        ctx.update({'resultados': resultados, 'stats': stats, 'procesado': True})
+        return render(request, 'ninos/importar_excel.html', ctx)
+    return render(request, 'ninos/importar_excel.html', ctx)

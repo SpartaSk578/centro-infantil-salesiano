@@ -2,202 +2,175 @@
 {% block title %}{{ titulo }}{% endblock %}
 {% block page_title %}{{ titulo }}{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <style>
-.section-card { border-radius:14px; border:none; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:1.5rem; }
-.section-header { background:linear-gradient(90deg,#0F172A,#1E293B); color:#fff; padding:1rem 1.5rem; border-radius:14px 14px 0 0; }
-.section-body { padding:1.5rem; }
-.form-label { font-size:.82rem; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:.04em; margin-bottom:.3rem; }
+{% if objeto and objeto.id_grupo %}
+  {% with nombre=objeto.id_grupo.nombre_grupo|upper %}
+  {% if 'LACTANTE' in nombre %}
+    :root { --sala-c:#4CAF50; --sala-bg:#E2EFDA; --sala-t:#166534; }
+  {% elif 'INFANTE II A' in nombre or 'INFANTE IIA' in nombre %}
+    :root { --sala-c:#EA580C; --sala-bg:#FCE4D6; --sala-t:#9A3412; }
+  {% elif 'INFANTE II B' in nombre or 'INFANTE IIB' in nombre %}
+    :root { --sala-c:#2563EB; --sala-bg:#DBEAFE; --sala-t:#1E3A8A; }
+  {% elif 'INFANTE I' in nombre %}
+    :root { --sala-c:#64748B; --sala-bg:#F1F5F9; --sala-t:#334155; }
+  {% else %}
+    :root { --sala-c:#2563EB; --sala-bg:#EFF6FF; --sala-t:#1E40AF; }
+  {% endif %}
+  {% endwith %}
+{% else %}
+  :root { --sala-c:#2563EB; --sala-bg:#EFF6FF; --sala-t:#1E40AF; }
+{% endif %}
+
+.form-section { border-radius:14px; border:none; box-shadow:0 2px 10px rgba(0,0,0,.07); margin-bottom:1.5rem; overflow:hidden; }
+.section-header { background:var(--sala-c); color:#fff; padding:1rem 1.5rem; display:flex; align-items:center; gap:.6rem; font-weight:800; font-size:.9rem; }
+.section-body { padding:1.5rem; background:#fff; }
+.form-label { font-size:.78rem; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:.04em; margin-bottom:.3rem; }
+.form-control:focus, .form-select:focus { border-color:var(--sala-c); box-shadow:0 0 0 .2rem rgba(var(--sala-c),0.15); }
+.sala-banner { background:var(--sala-bg); border-left:4px solid var(--sala-c); border-radius:10px; padding:.75rem 1rem; margin-bottom:1.5rem; font-size:.85rem; color:var(--sala-t); font-weight:700; }
 </style>
+{% endblock %}
+
+{% block content %}
+{% if objeto and objeto.id_grupo %}
+<div class="sala-banner">
+    <i class="bi bi-door-open me-2"></i>Sala: {{ objeto.id_grupo.nombre_grupo }}
+    {% if objeto.ci_nino %} &nbsp;·&nbsp; <i class="bi bi-card-text me-1"></i>CI: {{ objeto.ci_nino }}{% endif %}
+</div>
+{% endif %}
 
 <form method="post" enctype="multipart/form-data">
 {% csrf_token %}
 
-<!-- 1. Datos Básicos -->
-<div class="section-card">
-    <div class="section-header"><i class="bi bi-person-fill me-2"></i>Datos Personales</div>
+<!-- 1. Datos Personales -->
+<div class="form-section">
+    <div class="section-header"><i class="bi bi-person-fill"></i>Datos Personales</div>
     <div class="section-body">
         <div class="row g-3">
             <div class="col-md-4">
-                <label class="form-label">Apellido Paterno *</label>
-                {{ form.apellido_paterno }}
+                <label class="form-label">Apellido Paterno *</label>{{ form.apellido_paterno }}
             </div>
             <div class="col-md-4">
-                <label class="form-label">Apellido Materno</label>
-                {{ form.apellido_materno }}
+                <label class="form-label">Apellido Materno</label>{{ form.apellido_materno }}
             </div>
             <div class="col-md-4">
-                <label class="form-label">Nombres *</label>
-                {{ form.nombres }}
+                <label class="form-label">Nombres *</label>{{ form.nombres }}
             </div>
             <div class="col-md-3">
-                <label class="form-label">CI del Niño/a</label>
-                {{ form.ci_nino }}
+                <label class="form-label">CI del Niño/a</label>{{ form.ci_nino }}
             </div>
             <div class="col-md-3">
-                <label class="form-label">Sexo *</label>
-                {{ form.sexo }}
+                <label class="form-label">Sexo *</label>{{ form.sexo }}
             </div>
             <div class="col-md-3">
-                <label class="form-label">Fecha de Nacimiento *</label>
-                {{ form.fecha_nacimiento }}
+                <label class="form-label">Fecha de Nacimiento *</label>{{ form.fecha_nacimiento }}
             </div>
             <div class="col-md-3">
-                <label class="form-label">Fecha de Ingreso *</label>
-                {{ form.fecha_ingreso }}
-            </div>
-            <div class="col-md-3">
-                <label class="form-label">Foto</label>
-                {{ form.foto }}
+                <label class="form-label">Fecha de Ingreso *</label>{{ form.fecha_ingreso }}
             </div>
             <div class="col-md-12">
-                <label class="form-label">Dirección</label>
-                {{ form.direccion }}
+                <label class="form-label">Dirección</label>{{ form.direccion }}
             </div>
             <div class="col-md-6">
-                <label class="form-label">Sala Solicitada</label>
-                {{ form.sala }}
+                <label class="form-label">Sala Solicitada</label>{{ form.sala }}
             </div>
             <div class="col-md-6">
-                <label class="form-label">Grupo / Sala Asignada</label>
-                {{ form.id_grupo }}
+                <label class="form-label">Grupo / Sala Asignada</label>{{ form.id_grupo }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Foto</label>{{ form.foto }}
             </div>
         </div>
     </div>
 </div>
 
 <!-- 2. Datos Antropométricos -->
-<div class="section-card">
-    <div class="section-header"><i class="bi bi-activity me-2"></i>Datos Antropométricos y Nutricionales</div>
+<div class="form-section">
+    <div class="section-header"><i class="bi bi-activity"></i>Datos Antropométricos y Nutricionales</div>
     <div class="section-body">
         <div class="row g-3">
             <div class="col-md-3">
-                <label class="form-label">Peso (kg)</label>
-                {{ form.peso_kg }}
+                <label class="form-label">Peso (kg)</label>{{ form.peso_kg }}
             </div>
             <div class="col-md-3">
-                <label class="form-label">Talla (cm)</label>
-                {{ form.talla_cm }}
+                <label class="form-label">Talla (cm)</label>{{ form.talla_cm }}
             </div>
             <div class="col-md-4">
-                <label class="form-label">Estado Nutricional</label>
-                {{ form.estado_nutricional }}
+                <label class="form-label">Estado Nutricional</label>{{ form.estado_nutricional }}
             </div>
             <div class="col-md-2 d-flex align-items-end pb-2">
-                <div class="form-check">
-                    {{ form.vacunas_al_dia }}
-                    <label class="form-check-label fw-bold small ms-1">Vacunas al día</label>
-                </div>
+                <div class="form-check">{{ form.vacunas_al_dia }}<label class="form-check-label fw-bold small ms-1">Vacunas al día</label></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- 3. Escala Abreviada de Desarrollo -->
-<div class="section-card">
-    <div class="section-header"><i class="bi bi-graph-up me-2"></i>Escala Abreviada de Desarrollo (EAD)</div>
+<!-- 3. EAD -->
+<div class="form-section">
+    <div class="section-header"><i class="bi bi-graph-up"></i>Escala Abreviada de Desarrollo (EAD)</div>
     <div class="section-body">
-        <div class="alert alert-info py-2 mb-3" style="font-size:.8rem;">
-            <i class="bi bi-info-circle me-1"></i>Ingrese el puntaje obtenido en cada área (0-100).
-            <strong>Clasificación:</strong> Azul=Alto, Verde=Medio Alto, Amarillo=Medio Bajo, Rojo=Alerta.
+        <div class="alert py-2 mb-3" style="background:var(--sala-bg);color:var(--sala-t);font-size:.8rem;border-radius:8px;">
+            <i class="bi bi-info-circle me-1"></i>Puntaje por área (0-100). Azul=Alto · Verde=Medio Alto · Amarillo=Medio Bajo · Rojo=Alerta
         </div>
         <div class="row g-3">
-            <div class="col-md-3">
-                <label class="form-label">Motricidad Gruesa</label>
-                {{ form.ead_motricidad_gruesa }}
-            </div>
-            <div class="col-md-3">
-                <label class="form-label">Motricidad Fina</label>
-                {{ form.ead_motricidad_fina }}
-            </div>
-            <div class="col-md-3">
-                <label class="form-label">Audición y Lenguaje</label>
-                {{ form.ead_audicion_lenguaje }}
-            </div>
-            <div class="col-md-3">
-                <label class="form-label">Personal y Social</label>
-                {{ form.ead_personal_social }}
-            </div>
+            <div class="col-md-3"><label class="form-label">Motricidad Gruesa</label>{{ form.ead_motricidad_gruesa }}</div>
+            <div class="col-md-3"><label class="form-label">Motricidad Fina</label>{{ form.ead_motricidad_fina }}</div>
+            <div class="col-md-3"><label class="form-label">Audición y Lenguaje</label>{{ form.ead_audicion_lenguaje }}</div>
+            <div class="col-md-3"><label class="form-label">Personal y Social</label>{{ form.ead_personal_social }}</div>
         </div>
     </div>
 </div>
 
 <!-- 4. Información Médica -->
-<div class="section-card">
-    <div class="section-header"><i class="bi bi-heart-pulse me-2"></i>Información Médica</div>
+<div class="form-section">
+    <div class="section-header"><i class="bi bi-heart-pulse"></i>Información Médica</div>
     <div class="section-body">
-        <label class="form-label">Observaciones médicas, alergias, medicamentos, etc.</label>
-        {{ form.info_medica }}
+        <label class="form-label">Alergias, medicamentos, observaciones</label>{{ form.info_medica }}
     </div>
 </div>
 
 <!-- 5. Responsables -->
-<div class="section-card">
-    <div class="section-header"><i class="bi bi-people me-2"></i>Responsables del Niño/a</div>
+<div class="form-section">
+    <div class="section-header"><i class="bi bi-people"></i>Responsables del Niño/a</div>
     <div class="section-body">
         <div class="row g-3">
             <div class="col-md-6">
-                <label class="form-label">Padre/IDS (Estudiante ITDB)</label>
-                {{ form.CI_beneficiario }}
+                <label class="form-label">Padre/IDTB (Estudiante IDTB)</label>{{ form.CI_beneficiario }}
             </div>
             <div class="col-md-6">
-                <label class="form-label">Padre/Externo</label>
-                {{ form.CI_tutor_padre }}
+                <label class="form-label">Padre/Externo</label>{{ form.CI_tutor_padre }}
             </div>
         </div>
     </div>
 </div>
 
 <!-- 6. Personas Autorizadas -->
-<div class="section-card">
-    <div class="section-header"><i class="bi bi-person-check me-2"></i>Personas Autorizadas para Recoger al Niño/a</div>
+<div class="form-section">
+    <div class="section-header"><i class="bi bi-person-check"></i>Personas Autorizadas para Recoger al Niño/a</div>
     <div class="section-body">
-        <p class="text-muted small mb-3">Registre las personas autorizadas con su CI para seguridad del menor.</p>
-
-        <!-- Madre -->
-        <h6 class="fw-bold text-primary mb-2"><i class="bi bi-person-heart me-1"></i>Madre</h6>
+        <h6 class="fw-bold mb-2" style="color:var(--sala-c);font-size:.85rem;"><i class="bi bi-person-heart me-1"></i>Madre</h6>
         <div class="row g-3 mb-3">
-            <div class="col-md-8">
-                <label class="form-label">Nombre completo</label>
-                {{ form.nombre_madre }}
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">CI</label>
-                {{ form.ci_madre }}
-            </div>
+            <div class="col-md-8"><label class="form-label">Nombre completo</label>{{ form.nombre_madre }}</div>
+            <div class="col-md-4"><label class="form-label">CI</label>{{ form.ci_madre }}</div>
         </div>
-
-        <!-- Padre -->
-        <h6 class="fw-bold text-primary mb-2"><i class="bi bi-person-fill me-1"></i>Padre</h6>
+        <h6 class="fw-bold mb-2" style="color:var(--sala-c);font-size:.85rem;"><i class="bi bi-person-fill me-1"></i>Padre</h6>
         <div class="row g-3 mb-3">
-            <div class="col-md-8">
-                <label class="form-label">Nombre completo</label>
-                {{ form.nombre_padre }}
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">CI</label>
-                {{ form.ci_padre }}
-            </div>
+            <div class="col-md-8"><label class="form-label">Nombre completo</label>{{ form.nombre_padre }}</div>
+            <div class="col-md-4"><label class="form-label">CI</label>{{ form.ci_padre }}</div>
         </div>
-
-        <!-- Autorizados adicionales -->
-        <h6 class="fw-bold text-secondary mb-2"><i class="bi bi-person-plus me-1"></i>Persona Autorizada 1</h6>
-        <div class="row g-3 mb-3">
-            <div class="col-md-5"><label class="form-label">Nombre</label>{{ form.autorizado_1_nombre }}</div>
+        <h6 class="fw-bold mb-2" style="color:#64748B;font-size:.85rem;"><i class="bi bi-person-plus me-1"></i>Personas Adicionales (hasta 3)</h6>
+        <div class="row g-3 mb-2">
+            <div class="col-md-5"><label class="form-label">Nombre 1</label>{{ form.autorizado_1_nombre }}</div>
             <div class="col-md-4"><label class="form-label">CI</label>{{ form.autorizado_1_ci }}</div>
             <div class="col-md-3"><label class="form-label">Parentesco</label>{{ form.autorizado_1_parentesco }}</div>
         </div>
-
-        <h6 class="fw-bold text-secondary mb-2"><i class="bi bi-person-plus me-1"></i>Persona Autorizada 2</h6>
-        <div class="row g-3 mb-3">
-            <div class="col-md-5"><label class="form-label">Nombre</label>{{ form.autorizado_2_nombre }}</div>
+        <div class="row g-3 mb-2">
+            <div class="col-md-5"><label class="form-label">Nombre 2</label>{{ form.autorizado_2_nombre }}</div>
             <div class="col-md-4"><label class="form-label">CI</label>{{ form.autorizado_2_ci }}</div>
             <div class="col-md-3"><label class="form-label">Parentesco</label>{{ form.autorizado_2_parentesco }}</div>
         </div>
-
-        <h6 class="fw-bold text-secondary mb-2"><i class="bi bi-person-plus me-1"></i>Persona Autorizada 3</h6>
         <div class="row g-3">
-            <div class="col-md-5"><label class="form-label">Nombre</label>{{ form.autorizado_3_nombre }}</div>
+            <div class="col-md-5"><label class="form-label">Nombre 3</label>{{ form.autorizado_3_nombre }}</div>
             <div class="col-md-4"><label class="form-label">CI</label>{{ form.autorizado_3_ci }}</div>
             <div class="col-md-3"><label class="form-label">Parentesco</label>{{ form.autorizado_3_parentesco }}</div>
         </div>
@@ -206,10 +179,10 @@
 
 <!-- Botones -->
 <div class="d-flex gap-3 mb-5">
-    <button type="submit" class="btn btn-primary fw-bold px-5 shadow-sm">
+    <button type="submit" class="btn fw-bold px-5 shadow-sm" style="background:var(--sala-c);color:#fff;border-radius:10px;">
         <i class="bi bi-check-lg me-2"></i>Guardar Registro
     </button>
-    <a href="{% url 'ninos:lista_ninos' %}" class="btn btn-outline-secondary fw-bold px-4">Cancelar</a>
+    <a href="{% url 'ninos:lista_ninos' %}" class="btn btn-outline-secondary fw-bold px-4" style="border-radius:10px;">Cancelar</a>
 </div>
 </form>
 {% endblock %}

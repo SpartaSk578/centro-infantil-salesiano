@@ -71,7 +71,7 @@
           {% endif %}
           {% if nino.CI_beneficiario %}
             <a href="{% url 'beneficiarios:detalle_beneficiario' nino.CI_beneficiario.CI_beneficiario %}" class="btn btn-sm btn-outline-secondary rounded-pill">
-              <i class="bi bi-person me-1"></i>Ver Padre/IDS
+              <i class="bi bi-person me-1"></i>Ver Padre/IDTB
             </a>
           {% elif nino.CI_tutor_padre %}
             <a href="{% url 'beneficiarios:detalle_tutor' nino.CI_tutor_padre.CI_tutor %}" class="btn btn-sm btn-outline-warning rounded-pill">

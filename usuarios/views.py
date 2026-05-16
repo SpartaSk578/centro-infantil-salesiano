@@ -42,7 +42,7 @@ def logout_view(request):
 @login_required
 def dashboard(request):
     from ninos.models import Nino
-    from beneficiarios.models import Beneficiario, PreInscripcion
+    from beneficiarios.models import Beneficiario, TutorPadre, PreInscripcion
     from asistencia.models import Asistencia
     from evaluaciones.models import Evaluacion
     from grupos.models import Grupo

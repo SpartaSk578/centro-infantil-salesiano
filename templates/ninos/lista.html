@@ -97,15 +97,17 @@
                     <tbody class="bg-white">
                         {% regroup ninos by id_grupo as ninos_por_sala %}
                         {% for sala_group in ninos_por_sala %}
+                        {% with sala_nombre=sala_group.grouper|default:"Sin Sala Asignada" %}
                         <tr>
-                            <td colspan="9" class="py-2 px-3" style="background:linear-gradient(90deg,#f0f9ff,#f8fafc);border-top:2px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">
-                                <span class="fw-bold text-uppercase" style="font-size:0.72rem;letter-spacing:1.5px;color:#0369a1;">
+                            <td colspan="9" class="py-2 px-3" style="{% if 'LACTANTE' in sala_nombre|upper %}background:linear-gradient(90deg,#dcfce7,#f8fafc);border-left:4px solid #16a34a;{% elif 'INFANTE II A' in sala_nombre|upper or 'INFANTE IIA' in sala_nombre|upper %}background:linear-gradient(90deg,#ffedd5,#f8fafc);border-left:4px solid #ea580c;{% elif 'INFANTE II B' in sala_nombre|upper or 'INFANTE IIB' in sala_nombre|upper %}background:linear-gradient(90deg,#dbeafe,#f8fafc);border-left:4px solid #2563eb;{% elif 'INFANTE I' in sala_nombre|upper %}background:linear-gradient(90deg,#f1f5f9,#f8fafc);border-left:4px solid #64748b;{% else %}background:linear-gradient(90deg,#f0f9ff,#f8fafc);border-left:4px solid #94a3b8;{% endif %}border-top:2px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">
+                                <span class="fw-bold text-uppercase" style="font-size:0.72rem;letter-spacing:1.5px;color:#0f172a;">
                                     <i class="bi bi-door-closed-fill me-1"></i>
-                                    {% if sala_group.grouper %}{{ sala_group.grouper }}{% else %}Sin Sala Asignada{% endif %}
-                                    <span class="badge bg-primary bg-opacity-10 text-primary ms-2" style="font-size:0.65rem;">{{ sala_group.list|length }} niños</span>
+                                    {{ sala_nombre }}
+                                    <span class="badge ms-2" style="font-size:0.65rem;background:rgba(0,0,0,0.07);color:#374151;">{{ sala_group.list|length }} niños</span>
                                 </span>
                             </td>
                         </tr>
+                        {% endwith %}
                         {% for nino in sala_group.list %}
                         <tr style="transition: all 0.2s;">
                             {% if user.id_rol.nombre_rol != 'Educadora' %}

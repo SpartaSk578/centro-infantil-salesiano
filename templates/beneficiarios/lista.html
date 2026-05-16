@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 
-{% block page_title %}Padres/IDTB{% endblock %}
+{% block page_title %}Padres/ITDB{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
     <div>
         <h4 class="fw-bold mb-0 text-dark">
-            <i class="bi bi-people-fill text-primary me-2"></i>Gestión de Padres/IDTB
+            <i class="bi bi-people-fill text-primary me-2"></i>Gestión de Padres/ITDB
         </h4>
-        <p class="text-muted small mb-0">Padres estudiantes del IDTB registrados.</p>
+        <p class="text-muted small mb-0">Padres estudiantes del ITDB registrados.</p>
     </div>
     <div class="d-flex gap-2 flex-wrap align-items-center">
         <form class="d-flex" method="get">
@@ -20,7 +20,7 @@
         </form>
         {% if user.id_rol.nombre_rol != 'Educadora' %}
         <a href="{% url 'beneficiarios:crear_beneficiario' %}" class="btn btn-primary rounded-3 fw-bold shadow-sm px-4">
-            <i class="bi bi-plus-lg me-1"></i> Nuevo Padre/IDTB
+            <i class="bi bi-plus-lg me-1"></i> Nuevo Padre/ITDB
         </a>
         {% endif %}
     </div>
@@ -55,6 +55,7 @@
                     <th class="py-3 text-secondary text-uppercase" style="font-size: 0.65rem; font-weight: 800; letter-spacing: 1px;">Nombre Completo</th>
                     <th class="py-3 text-secondary text-uppercase" style="font-size: 0.65rem; font-weight: 800; letter-spacing: 1px;">Contacto</th>
                     <th class="py-3 text-secondary text-uppercase" style="font-size: 0.65rem; font-weight: 800; letter-spacing: 1px;">Dirección</th>
+                    <th class="py-3 text-secondary text-uppercase" style="font-size: 0.65rem; font-weight: 800; letter-spacing: 1px;">Sala del Niño</th>
                     <th class="py-3 text-secondary text-uppercase text-center" style="font-size: 0.65rem; font-weight: 800; letter-spacing: 1px;">Niños</th>
                     <th class="py-3 text-secondary text-uppercase" style="font-size: 0.65rem; font-weight: 800; letter-spacing: 1px;">Registro</th>
                     <th class="pe-4 py-3 text-secondary text-uppercase text-end" style="font-size: 0.65rem; font-weight: 800; letter-spacing: 1px;">Gestión</th>
@@ -97,6 +98,24 @@
                         <div class="text-muted small" style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="{{ b.direccion }}">
                             <i class="bi bi-geo-alt-fill me-1 opacity-50"></i>{{ b.direccion|default:"No registrada" }}
                         </div>
+                    </td>
+                    <td>
+                        {% for nino in b.ninos.all|slice:":1" %}
+                        {% if nino.id_grupo %}
+                        <span class="badge px-2 py-1 rounded-2 fw-bold" style="font-size:0.65rem;
+                            {% if 'LACTANTE' in nino.id_grupo.nombre_grupo|upper %}background:#dcfce7;color:#166534;
+                            {% elif 'INFANTE II A' in nino.id_grupo.nombre_grupo|upper %}background:#ffedd5;color:#9a3412;
+                            {% elif 'INFANTE II B' in nino.id_grupo.nombre_grupo|upper %}background:#dbeafe;color:#1e3a8a;
+                            {% elif 'INFANTE I' in nino.id_grupo.nombre_grupo|upper %}background:#f1f5f9;color:#334155;
+                            {% else %}background:#f0f9ff;color:#0369a1;{% endif %}">
+                            {{ nino.id_grupo.nombre_grupo }}
+                        </span>
+                        {% else %}
+                        <span class="text-muted" style="font-size:0.75rem;">—</span>
+                        {% endif %}
+                        {% empty %}
+                        <span class="text-muted" style="font-size:0.75rem;">—</span>
+                        {% endfor %}
                     </td>
                     <td class="text-center">
                         <span class="badge rounded-pill px-3 py-2" style="background:#f0f9ff;color:#0369a1;font-weight:800;font-size:0.75rem;">

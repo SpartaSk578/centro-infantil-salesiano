@@ -51,7 +51,7 @@ def dashboard(request):
     ctx = {
         'total_ninos': Nino.objects.count(),
         'total_beneficiarios': Beneficiario.objects.count() + TutorPadre.objects.count(),
-        'total_idtb': Beneficiario.objects.count(),
+        'total_itdb': Beneficiario.objects.count(),
         'total_externos': TutorPadre.objects.count(),
         'total_grupos': Grupo.objects.count(),
         'total_usuarios': Usuario.objects.count(),

@@ -111,9 +111,18 @@ def lista_ninos(request):
         )
     if sala_id:
         ninos = ninos.filter(id_grupo_id=sala_id)
-    ninos = ninos.order_by('id_grupo__nombre_grupo', 'apellido_paterno', 'apellido_materno', 'nombres')
+    # Ordenar por sala siguiendo el orden correcto: Lactantes, Infante I, II A, II B
+    ORDEN_SALA = ['LACTANTES', 'INFANTE I', 'INFANTE II A', 'INFANTE II B']
+    ninos_list = list(ninos.order_by('apellido_paterno', 'apellido_materno', 'nombres'))
+    def sala_sort_key(n):
+        nombre = str(n.id_grupo.nombre_grupo).upper().strip() if n.id_grupo else 'ZZZZ'
+        try:
+            return (ORDEN_SALA.index(nombre), n.apellido_paterno or '', n.nombres or '')
+        except ValueError:
+            return (99, n.apellido_paterno or '', n.nombres or '')
+    ninos_list.sort(key=sala_sort_key)
     grupos = Grupo.objects.all().order_by('nombre_grupo')
-    return render(request, 'ninos/lista.html', {'ninos': ninos, 'q': q, 'sala': sala_id, 'grupos': grupos})
+    return render(request, 'ninos/lista.html', {'ninos': ninos_list, 'q': q, 'sala': sala_id, 'grupos': grupos})
 
 @login_required
 def detalle_nino(request, pk):
